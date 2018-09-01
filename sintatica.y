@@ -24,7 +24,8 @@ void yyerror(string);
 
 %start S
 
-%left '+'
+%left '+' '-'
+%left '*' '/'
 
 %%
 
@@ -51,6 +52,26 @@ E 			: E '+' E
 			{
 				$$.label = nameGen();
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " + " + $3.label + ";\n";
+			}
+			| E '-' E
+			{
+				$$.label = nameGen();
+				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " - " + $3.label + ";\n";
+			}
+			| E '/' E
+			{
+				$$.label = nameGen();
+				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " / " + $3.label + ";\n";
+			}
+			| E '*' E
+			{
+				$$.label = nameGen();
+				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " * " + $3.label + ";\n";
+			}
+			| '(' E ')'
+			{
+				$$.label = $2.label;
+				$$.traducao =  $2.traducao;
 			}
 			| TK_NUM
 			{
