@@ -22,7 +22,15 @@ ID {LETRA}({LETRA}|{NUM})*
 
 "main"		{return TK_MAIN;}
 
-"int"		{return TK_TIPO_INT;}
+"int"		{ yylval.label = "int"; return TK_TIPO; }
+
+"float"		{ yylval.label = "float"; return TK_TIPO; }
+
+"string"	{ yylval.label = "string"; return TK_TIPO; }
+
+"boolean"	{ yylval.label = "boolean"; return TK_TIPO; }
+
+
 
 [(){}[\];,]	{ return *yytext; }
 

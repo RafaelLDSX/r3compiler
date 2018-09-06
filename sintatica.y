@@ -12,6 +12,7 @@ struct atributos
 {
 	string label;
 	string traducao;
+	string tipo;
 };
 
 int yylex(void);
@@ -19,7 +20,7 @@ void yyerror(string);
 %}
 
 %token TK_NUM
-%token TK_MAIN TK_ID TK_TIPO_INT
+%token TK_MAIN TK_ID TK_TIPO
 %token TK_FIM TK_ERROR
 
 %start S
@@ -29,9 +30,9 @@ void yyerror(string);
 
 %%
 
-S 			: TK_TIPO_INT TK_MAIN '(' ')' BLOCO
+S 			: TK_TIPO TK_MAIN '(' ')' BLOCO
 			{
-				cout << "/*Compilador FOCA*/\n" << "#include <iostream>\n#include<string.h>\n#include<stdio.h>\nint main(void)\n{\n" << $5.traducao << "\treturn 0;\n}" << endl; 
+				cout << "/*R3 Compiler*/\n" << "#include <iostream>\n#include<string.h>\n#include<stdio.h>\nint main(void)\n{\n" << $5.traducao << "\treturn 0;\n}" << endl; 
 			}
 			;
 
@@ -79,6 +80,26 @@ E 			: E '+' E
 				$$.traducao = "\t" + $$.label + " = " + $1.traducao + ";\n";
 			}
 			| TK_ID
+			{
+				int aux = searchMatrix($1.label);
+				if(aux != -1){
+					$$.traducao = matriz[1][contadorMatriz];
+				}
+				else{
+					yyerror("id not declared");
+				}
+			}
+			| TK_TIPO TK_ID
+			{
+				matriz[0][contadorMatriz] = $2.label;
+				matriz[1][contadorMatriz] = $2.traducao;
+				matriz[2][contadorMatriz] = $1.label;
+				$$.traducao = $1.label + $2.traducao;
+			}
+			| TK_ID '=' E
+			{
+
+			}
 			;
 
 %%
