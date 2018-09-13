@@ -3,8 +3,16 @@
 #include <sstream>
 
 #define MATRIX_SIZE 10
+#define YYSTYPE atributos
 
 using namespace std;
+
+struct atributos
+{
+	string label;
+	string traducao;
+	string tipo;
+};
 
 static int contadorMatriz = 0;
 static string matriz[3][10];
@@ -19,8 +27,16 @@ string nameGen(){
 int searchMatrix(string id){
 	
 	for(int i = 0; i < 10; i++){
-		matriz[i][0] == id;
-		return i; 
+		if (matriz[0][i] == id){
+			return i; 
+		}
 	}
 	return -1;
+}
+
+bool isIdDeclared(string id){
+	if (searchMatrix(id) != -1){
+		return true;
+	}
+	return false;
 }

@@ -4,16 +4,11 @@
 #include <sstream>
 #include "helper.cpp"
 
-#define YYSTYPE atributos
+
 
 using namespace std;
 
-struct atributos
-{
-	string label;
-	string traducao;
-	string tipo;
-};
+
 
 int yylex(void);
 void yyerror(string);
@@ -78,12 +73,14 @@ E 			: E '+' E
 			{
 				$$.label = nameGen();
 				$$.traducao = "\t" + $$.label + " = " + $1.traducao + ";\n";
+				$$.tipo = "int";
 			}
 			| TK_ID
 			{
 				int aux = searchMatrix($1.label);
 				if(aux != -1){
 					$$.traducao = matriz[1][contadorMatriz];
+					$$.tipo = matriz[2][contadorMatriz];
 				}
 				else{
 					yyerror("id not declared");
@@ -91,10 +88,14 @@ E 			: E '+' E
 			}
 			| TK_TIPO TK_ID
 			{
+				if (isIdDeclared($2.label)){
+					yyerror("id already declared");
+				}
+				$2.traducao = nameGen();
 				matriz[0][contadorMatriz] = $2.label;
 				matriz[1][contadorMatriz] = $2.traducao;
 				matriz[2][contadorMatriz] = $1.label;
-				$$.traducao = $1.label + $2.traducao;
+				$$.traducao = "\t" + $1.label + " " + $2.traducao + ";\n";
 			}
 			| TK_ID '=' E
 			{
