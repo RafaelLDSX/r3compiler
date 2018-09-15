@@ -79,13 +79,14 @@ E 			: E '+' E
 			{
 				int aux = searchMatrix($1.label);
 				if(aux != -1){
-					$$.traducao = matriz[1][contadorMatriz];
-					$$.tipo = matriz[2][contadorMatriz];
+					$$.label = matriz[1][aux];
+					$$.traducao = matriz[1][aux];
+					$$.tipo = matriz[2][aux];
 				}
 				else{
 					yyerror("id not declared");
 				}
-			}
+			} 
 			| TK_TIPO TK_ID
 			{
 				if (isIdDeclared($2.label)){
@@ -95,6 +96,7 @@ E 			: E '+' E
 				matriz[0][contadorMatriz] = $2.label;
 				matriz[1][contadorMatriz] = $2.traducao;
 				matriz[2][contadorMatriz] = $1.label;
+				contadorMatriz++;
 				$$.traducao = "\t" + $1.label + " " + $2.traducao + ";\n";
 			}
 			| TK_ID '=' E
