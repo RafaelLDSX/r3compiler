@@ -42,6 +42,11 @@ COMANDOS	: COMANDO COMANDOS
 				$$.traducao = $1.traducao + $2.traducao;
 			}
 			|
+			{
+				$$.label = "";
+				$$.traducao = "";
+				$$.tipo = "";
+			}
 			;
 
 COMANDO 	: E ';'
@@ -75,7 +80,7 @@ E 			: E '+' E
 			| TK_NUM
 			{
 				$$.label = nameGen();
-				$$.traducao = "\t" + $$.label + " = " + $1.traducao + ";\n";
+				$$.traducao = "\tint " + $$.label + " = " + $1.traducao + ";\n";
 				$$.tipo = "int";
 			}
 			| TK_ID
