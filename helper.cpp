@@ -40,3 +40,10 @@ bool isIdDeclared(string id){
 	}
 	return false;
 }
+
+void addMatrix(atributos n){
+	matriz[0][contadorMatriz] = n.label;
+	matriz[1][contadorMatriz] = n.traducao;
+	matriz[2][contadorMatriz] = n.tipo;
+	contadorMatriz++;
+}

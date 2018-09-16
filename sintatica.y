@@ -38,6 +38,9 @@ BLOCO		: '{' COMANDOS '}'
 			;
 
 COMANDOS	: COMANDO COMANDOS
+			{
+				$$.traducao = $1.traducao + $2.traducao;
+			}
 			|
 			;
 
@@ -77,10 +80,9 @@ E 			: E '+' E
 			}
 			| TK_ID
 			{
-				int aux = searchMatrix($1.label);
+				int aux = searchMatrix($1.label);				//isIdDeclared não traz o índice, por isso não é usado aqui
 				if(aux != -1){
 					$$.label = matriz[1][aux];
-					$$.traducao = matriz[1][aux];
 					$$.tipo = matriz[2][aux];
 				}
 				else{
@@ -93,10 +95,8 @@ E 			: E '+' E
 					yyerror("id already declared");
 				}
 				$2.traducao = nameGen();
-				matriz[0][contadorMatriz] = $2.label;
-				matriz[1][contadorMatriz] = $2.traducao;
-				matriz[2][contadorMatriz] = $1.label;
-				contadorMatriz++;
+				$2.tipo = $1.label;
+				addMatrix($2);
 				$$.traducao = "\t" + $1.label + " " + $2.traducao + ";\n";
 			}
 			| TK_ID '=' E
