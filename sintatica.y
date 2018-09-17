@@ -20,6 +20,7 @@ void yyerror(string);
 
 %start S
 
+%right '='
 %left '+' '-'
 %left '*' '/'
 
@@ -83,21 +84,10 @@ E 			: E '+' E
 				$$.traducao = "\tint " + $$.label + " = " + $1.traducao + ";\n";
 				$$.tipo = "int";
 			}
-			| TK_ID
-			{
-				int aux = searchMatrix($1.label);				//isIdDeclared não traz o índice, por isso não é usado aqui
-				if(aux != -1){
-					$$.label = matriz[1][aux];
-					$$.tipo = matriz[2][aux];
-				}
-				else{
-					yyerror("id not declared");
-				}
-			} 
 			| TK_TIPO TK_ID
 			{
 				if (isIdDeclared($2.label)){
-					yyerror("id already declared");
+					yyerror("id already declared\n");
 				}
 				$2.traducao = nameGen();
 				$2.tipo = $1.label;
@@ -106,8 +96,25 @@ E 			: E '+' E
 			}
 			| TK_ID '=' E
 			{
-
+				if (isIdDeclared($1.label)){
+					$1.traducao = getTempName($1.label);
+					$$.traducao = "\t" + $1.traducao + " = " + $3.label + ";\n";
+				}
+				else{
+					yyerror("id not declared\n");
+				}
 			}
+			| TK_ID
+			{
+				int aux = searchMatrix($1.label);				//isIdDeclared não traz o índice, por isso não é usado aqui
+				if(aux != -1){
+					$$.label = matriz[1][aux];
+					$$.tipo = matriz[2][aux];
+				}
+				else{
+					yyerror("id not declared\n");
+				}
+			} 
 			;
 
 %%

@@ -47,3 +47,11 @@ void addMatrix(atributos n){
 	matriz[2][contadorMatriz] = n.tipo;
 	contadorMatriz++;
 }
+
+string getTempName(string s){
+	int aux;
+	for (aux = 0; matriz[0][aux] != s && aux < contadorMatriz; aux++){
+
+	}
+	return matriz[1][aux];
+}
