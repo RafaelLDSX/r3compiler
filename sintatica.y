@@ -125,6 +125,9 @@ int yyparse();
 
 int main( int argc, char* argv[] )	
 {
+	criarVetorOp();
+	printVetorOp();
+
 	yyparse();
 
 	return 0;
