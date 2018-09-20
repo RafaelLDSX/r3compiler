@@ -55,6 +55,10 @@ COMANDO 	: E ';'
 
 E 			: E '+' E
 			{
+				$$.tipo = checarOp("+", $1.tipo, $3.tipo);
+				if ($$.tipo == ""){
+					yyerror("no op defined for these types\n");
+				}
 				$$.label = nameGen();
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " + " + $3.label + ";\n";
 			}
@@ -81,8 +85,9 @@ E 			: E '+' E
 			| TK_NUM
 			{
 				$$.label = nameGen();
-				$$.traducao = "\tint " + $$.label + " = " + $1.traducao + ";\n";
 				$$.tipo = "int";
+				$$.traducao = "\t" + $$.tipo + " " + $$.label + " = " + $1.traducao + ";\n";
+				
 			}
 			| TK_TIPO TK_ID
 			{
@@ -98,7 +103,7 @@ E 			: E '+' E
 			{
 				if (isIdDeclared($1.label)){
 					$1.traducao = getTempName($1.label);
-					$$.traducao = "\t" + $1.traducao + " = " + $3.label + ";\n";
+					$$.traducao = $3.traducao +"\t" + $1.traducao + " = " + $3.label + ";\n";
 				}
 				else{
 					yyerror("id not declared\n");
@@ -127,7 +132,6 @@ int main( int argc, char* argv[] )
 {
 	criarVetorOp();
 	printVetorOp();
-
 	yyparse();
 
 	return 0;

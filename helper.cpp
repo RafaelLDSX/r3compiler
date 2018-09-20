@@ -17,8 +17,8 @@ struct atributos
 
 typedef struct ops
 {
-	string tipoA;
 	string op;
+	string tipoA;
 	string tipoB;
 	string resultado;
 } OPERACOES;
@@ -66,23 +66,36 @@ string getTempName(string s){
 	return matriz[1][aux];
 }
 
-void inserirVetorOp(string a, string op, string b, string r){
-	OPERACOES aux = {a, op, b, r};
+void inserirVetorOp(string op, string a, string b, string r){
+	OPERACOES aux = {op, a, b, r};
 	operacoes.push_back(aux);
 }
 
 void criarVetorOp(){
-	inserirVetorOp("int", "+", "int", "int");
-	inserirVetorOp("int", "+", "float", "float");
-	inserirVetorOp("float", "+", "float", "float");
+	inserirVetorOp("+", "int", "int", "int");
+	inserirVetorOp("+", "int", "float", "float");
+	inserirVetorOp("+", "float", "float", "float");
 
 }
 
 void printVetorOp(){
+	cout << "\nTabela de Operações\n";
 	for(int i = 0; i < 3; i++){
-		cout << operacoes[i].tipoA;
-		cout << operacoes[i].op;
-		cout << operacoes[i].tipoB;
-		cout << operacoes[i].resultado;
+		cout << operacoes[i].tipoA << " ";
+		cout << operacoes[i].op << " ";
+		cout << operacoes[i].tipoB << " = ";
+		cout << operacoes[i].resultado << "\n";
 	}
+	cout << "\n";
+}
+
+string checarOp(string op, string opA, string opB){
+	for (int i = 0; i < operacoes.size(); i++){
+		if (operacoes[i].op == op){
+			if ((operacoes[i].tipoA == opA && operacoes[i].tipoB == opB) || operacoes[i].tipoA == opB && operacoes[i].tipoB == opA){
+				return operacoes[i].resultado;
+			}
+		}
+	}
+	return "";
 }
