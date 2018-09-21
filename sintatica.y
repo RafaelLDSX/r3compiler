@@ -57,6 +57,7 @@ E 			: E '+' E
 			{
 				string preTraducao =  $1.traducao + $3.traducao;
 				$$.tipo = checarOp("+", $1.tipo, $3.tipo);
+				string thisOp = $1.label + " + " + $3.label;
 				if ($$.tipo == ""){
 					yyerror("no op defined for these types\n");
 				}
@@ -64,17 +65,20 @@ E 			: E '+' E
 				if ($1.tipo != $$.tipo){
 					string aux = nameGen();
 					preTraducao = preTraducao + "\t" + $$.tipo + " " + aux + " = (" + $$.tipo + ") " + $1.label + ";\n";
+					thisOp = aux + " + " + $3.label;
 				}
 				else if ($3.tipo != $$.tipo){
 					string aux = nameGen();
 					preTraducao = preTraducao + "\t" + $$.tipo + " " + aux + " = (" + $$.tipo + ") " + $3.label + ";\n";
+					thisOp = $1.label + " + " + aux;
 				}
-				$$.traducao = preTraducao + "\t" + $$.tipo + " " + $$.label + ";\n" + "\t" + $$.label + " = " + $1.label + " + " + $3.label + ";\n";
+				$$.traducao = preTraducao + "\t" + $$.tipo + " " + $$.label + ";\n" + "\t" + $$.label + " = " + thisOp + ";\n";
 			}
 			| E '-' E
 			{
 				string preTraducao =  $1.traducao + $3.traducao;
-				$$.tipo = checarOp("+", $1.tipo, $3.tipo);
+				$$.tipo = checarOp("-", $1.tipo, $3.tipo);
+				string thisOp = $1.label + " - " + $3.label;
 				if ($$.tipo == ""){
 					yyerror("no op defined for these types\n");
 				}
@@ -82,17 +86,20 @@ E 			: E '+' E
 				if ($1.tipo != $$.tipo){
 					string aux = nameGen();
 					preTraducao = preTraducao + "\t" + $$.tipo + " " + aux + " = (" + $$.tipo + ") " + $1.label + ";\n";
+					thisOp = aux + " - " + $3.label;
 				}
 				else if ($3.tipo != $$.tipo){
 					string aux = nameGen();
 					preTraducao = preTraducao + "\t" + $$.tipo + " " + aux + " = (" + $$.tipo + ") " + $3.label + ";\n";
+					thisOp = $1.label + " - " + aux;
 				}
-				$$.traducao = preTraducao + "\t" + $$.tipo + " " + $$.label + ";\n" + "\t" + $$.label + " = " + $1.label + " - " + $3.label + ";\n";
+				$$.traducao = preTraducao + "\t" + $$.tipo + " " + $$.label + ";\n" + "\t" + $$.label + " = " + thisOp + ";\n";
 			}
 			| E '/' E
 			{
 				string preTraducao =  $1.traducao + $3.traducao;
-				$$.tipo = checarOp("+", $1.tipo, $3.tipo);
+				$$.tipo = checarOp("/", $1.tipo, $3.tipo);
+				string thisOp = $1.label + " / " + $3.label;
 				if ($$.tipo == ""){
 					yyerror("no op defined for these types\n");
 				}
@@ -100,17 +107,20 @@ E 			: E '+' E
 				if ($1.tipo != $$.tipo){
 					string aux = nameGen();
 					preTraducao = preTraducao + "\t" + $$.tipo + " " + aux + " = (" + $$.tipo + ") " + $1.label + ";\n";
+					thisOp = aux + " / " + $3.label;
 				}
 				else if ($3.tipo != $$.tipo){
 					string aux = nameGen();
 					preTraducao = preTraducao + "\t" + $$.tipo + " " + aux + " = (" + $$.tipo + ") " + $3.label + ";\n";
+					thisOp = $1.label + " / " + aux;
 				}
-				$$.traducao = preTraducao + "\t" + $$.tipo + " " + $$.label + ";\n" + "\t" + $$.label + " = " + $1.label + " / " + $3.label + ";\n";
+				$$.traducao = preTraducao + "\t" + $$.tipo + " " + $$.label + ";\n" + "\t" + $$.label + " = " + thisOp + ";\n";
 			}
 			| E '*' E
 			{
 				string preTraducao =  $1.traducao + $3.traducao;
-				$$.tipo = checarOp("+", $1.tipo, $3.tipo);
+				$$.tipo = checarOp("*", $1.tipo, $3.tipo);
+				string thisOp = $1.label + " * " + $3.label;
 				if ($$.tipo == ""){
 					yyerror("no op defined for these types\n");
 				}
@@ -118,12 +128,14 @@ E 			: E '+' E
 				if ($1.tipo != $$.tipo){
 					string aux = nameGen();
 					preTraducao = preTraducao + "\t" + $$.tipo + " " + aux + " = (" + $$.tipo + ") " + $1.label + ";\n";
+					thisOp = aux + " * " + $3.label;
 				}
 				else if ($3.tipo != $$.tipo){
 					string aux = nameGen();
 					preTraducao = preTraducao + "\t" + $$.tipo + " " + aux + " = (" + $$.tipo + ") " + $3.label + ";\n";
+					thisOp = $1.label + " * " + aux;
 				}
-				$$.traducao = preTraducao + "\t" + $$.tipo + " " + $$.label + ";\n" + "\t" + $$.label + " = " + $1.label + " * " + $3.label + ";\n";
+				$$.traducao = preTraducao + "\t" + $$.tipo + " " + $$.label + ";\n" + "\t" + $$.label + " = " + thisOp + ";\n";
 			}
 			| '(' E ')'
 			{
@@ -156,6 +168,7 @@ E 			: E '+' E
 			| TK_ID '=' E
 			{
 				if (isIdDeclared($1.label)){
+					
 					$1.traducao = getTempName($1.label);
 					$$.traducao = $3.traducao +"\t" + $1.traducao + " = " + $3.label + ";\n";
 				}
