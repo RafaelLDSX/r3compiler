@@ -72,15 +72,29 @@ void inserirVetorOp(string op, string a, string b, string r){
 }
 
 void criarVetorOp(){
+	//operações de soma
 	inserirVetorOp("+", "int", "int", "int");
 	inserirVetorOp("+", "int", "float", "float");
 	inserirVetorOp("+", "float", "float", "float");
+	//operações de subtração
+	inserirVetorOp("-", "int", "int", "int");
+	inserirVetorOp("-", "int", "float", "float");
+	inserirVetorOp("-", "float", "float", "float");
+	//operações de divisao
+	inserirVetorOp("/", "int", "int", "int");
+	inserirVetorOp("/", "int", "float", "float");
+	inserirVetorOp("/", "float", "float", "float");
+	//operações de multiplicação
+	inserirVetorOp("*", "int", "int", "int");
+	inserirVetorOp("*", "int", "float", "float");
+	inserirVetorOp("*", "float", "float", "float");
+
 
 }
 
 void printVetorOp(){
 	cout << "\nTabela de Operações\n";
-	for(int i = 0; i < 3; i++){
+	for(int i = 0; i < operacoes.size(); i++){
 		cout << operacoes[i].tipoA << " ";
 		cout << operacoes[i].op << " ";
 		cout << operacoes[i].tipoB << " = ";
@@ -92,6 +106,7 @@ void printVetorOp(){
 string checarOp(string op, string opA, string opB){
 	for (int i = 0; i < operacoes.size(); i++){
 		if (operacoes[i].op == op){
+			//por ter apenas um na tabela, checa-se também trocando a ordem dos operadores
 			if ((operacoes[i].tipoA == opA && operacoes[i].tipoB == opB) || operacoes[i].tipoA == opB && operacoes[i].tipoB == opA){
 				return operacoes[i].resultado;
 			}

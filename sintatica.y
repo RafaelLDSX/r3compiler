@@ -14,7 +14,7 @@ int yylex(void);
 void yyerror(string);
 %}
 
-%token TK_NUM
+%token TK_NUM TK_REAL
 %token TK_MAIN TK_ID TK_TIPO
 %token TK_FIM TK_ERROR
 
@@ -55,27 +55,75 @@ COMANDO 	: E ';'
 
 E 			: E '+' E
 			{
+				string preTraducao =  $1.traducao + $3.traducao;
 				$$.tipo = checarOp("+", $1.tipo, $3.tipo);
 				if ($$.tipo == ""){
 					yyerror("no op defined for these types\n");
 				}
 				$$.label = nameGen();
-				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " + " + $3.label + ";\n";
+				if ($1.tipo != $$.tipo){
+					string aux = nameGen();
+					preTraducao = preTraducao + "\t" + $$.tipo + " " + aux + " = (" + $$.tipo + ") " + $1.label + ";\n";
+				}
+				else if ($3.tipo != $$.tipo){
+					string aux = nameGen();
+					preTraducao = preTraducao + "\t" + $$.tipo + " " + aux + " = (" + $$.tipo + ") " + $3.label + ";\n";
+				}
+				$$.traducao = preTraducao + "\t" + $$.tipo + " " + $$.label + ";\n" + "\t" + $$.label + " = " + $1.label + " + " + $3.label + ";\n";
 			}
 			| E '-' E
 			{
+				string preTraducao =  $1.traducao + $3.traducao;
+				$$.tipo = checarOp("+", $1.tipo, $3.tipo);
+				if ($$.tipo == ""){
+					yyerror("no op defined for these types\n");
+				}
 				$$.label = nameGen();
-				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " - " + $3.label + ";\n";
+				if ($1.tipo != $$.tipo){
+					string aux = nameGen();
+					preTraducao = preTraducao + "\t" + $$.tipo + " " + aux + " = (" + $$.tipo + ") " + $1.label + ";\n";
+				}
+				else if ($3.tipo != $$.tipo){
+					string aux = nameGen();
+					preTraducao = preTraducao + "\t" + $$.tipo + " " + aux + " = (" + $$.tipo + ") " + $3.label + ";\n";
+				}
+				$$.traducao = preTraducao + "\t" + $$.tipo + " " + $$.label + ";\n" + "\t" + $$.label + " = " + $1.label + " - " + $3.label + ";\n";
 			}
 			| E '/' E
 			{
+				string preTraducao =  $1.traducao + $3.traducao;
+				$$.tipo = checarOp("+", $1.tipo, $3.tipo);
+				if ($$.tipo == ""){
+					yyerror("no op defined for these types\n");
+				}
 				$$.label = nameGen();
-				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " / " + $3.label + ";\n";
+				if ($1.tipo != $$.tipo){
+					string aux = nameGen();
+					preTraducao = preTraducao + "\t" + $$.tipo + " " + aux + " = (" + $$.tipo + ") " + $1.label + ";\n";
+				}
+				else if ($3.tipo != $$.tipo){
+					string aux = nameGen();
+					preTraducao = preTraducao + "\t" + $$.tipo + " " + aux + " = (" + $$.tipo + ") " + $3.label + ";\n";
+				}
+				$$.traducao = preTraducao + "\t" + $$.tipo + " " + $$.label + ";\n" + "\t" + $$.label + " = " + $1.label + " / " + $3.label + ";\n";
 			}
 			| E '*' E
 			{
+				string preTraducao =  $1.traducao + $3.traducao;
+				$$.tipo = checarOp("+", $1.tipo, $3.tipo);
+				if ($$.tipo == ""){
+					yyerror("no op defined for these types\n");
+				}
 				$$.label = nameGen();
-				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " * " + $3.label + ";\n";
+				if ($1.tipo != $$.tipo){
+					string aux = nameGen();
+					preTraducao = preTraducao + "\t" + $$.tipo + " " + aux + " = (" + $$.tipo + ") " + $1.label + ";\n";
+				}
+				else if ($3.tipo != $$.tipo){
+					string aux = nameGen();
+					preTraducao = preTraducao + "\t" + $$.tipo + " " + aux + " = (" + $$.tipo + ") " + $3.label + ";\n";
+				}
+				$$.traducao = preTraducao + "\t" + $$.tipo + " " + $$.label + ";\n" + "\t" + $$.label + " = " + $1.label + " * " + $3.label + ";\n";
 			}
 			| '(' E ')'
 			{
@@ -88,6 +136,12 @@ E 			: E '+' E
 				$$.tipo = "int";
 				$$.traducao = "\t" + $$.tipo + " " + $$.label + " = " + $1.traducao + ";\n";
 				
+			}
+			| TK_REAL
+			{
+				$$.label = nameGen();
+				$$.tipo = "float";
+				$$.traducao = "\t" + $$.tipo + " " + $$.label + " = " + $1.traducao + ";\n";
 			}
 			| TK_TIPO TK_ID
 			{

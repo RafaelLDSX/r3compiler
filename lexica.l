@@ -34,9 +34,10 @@ ID {LETRA}({LETRA}|{NUM})*
 
 [(){}[\];,]	{ return *yytext; }
 
-[+\-*/=]		{ return *yytext; }
+[+\-*/=]	{ return *yytext; }
 
 {NUM}		{ yylval.traducao = yytext; return TK_NUM; }
+{REAL}		{ yylval.traducao = yytext; return TK_REAL; }
 {ID}		{ yylval.label = yytext; return TK_ID; }
 
 .			{ *yytext; }
