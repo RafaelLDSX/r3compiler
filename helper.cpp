@@ -1,3 +1,4 @@
+#pragma once
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -23,8 +24,9 @@ typedef struct ops
 	string resultado;
 } OPERACOES;
 
+static int lineNumber = 1;
 static int contadorMatriz = 0;
-static string matriz[3][10];
+static string matriz[3][MATRIX_SIZE];
 static int counter = 0;
 static vector<OPERACOES> operacoes;
 
@@ -58,11 +60,15 @@ void addMatrix(atributos n){
 	contadorMatriz++;
 }
 
+string getType(string s){
+	int aux;
+	for (aux = 0; matriz[0][aux] != s && aux < contadorMatriz; aux++){}
+	return matriz[2][aux];
+}
+
 string getTempName(string s){
 	int aux;
-	for (aux = 0; matriz[0][aux] != s && aux < contadorMatriz; aux++){
-
-	}
+	for (aux = 0; matriz[0][aux] != s && aux < contadorMatriz; aux++){}
 	return matriz[1][aux];
 }
 

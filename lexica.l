@@ -1,6 +1,6 @@
 %{
 #include <string>
-
+#include "helper.cpp"
 %}
 
 ESPACO [ \t]
@@ -16,7 +16,7 @@ ID {LETRA}({LETRA}|{NUM})*
 %option noyywrap
 %%
 
-"\n"		{}
+"\n"		{ lineNumber++; }
 
 {DELIM} 	{}
 
@@ -26,7 +26,7 @@ ID {LETRA}({LETRA}|{NUM})*
 
 "float"		{ yylval.label = "float"; return TK_TIPO; }
 
-"string"	{ yylval.label = "string"; return TK_TIPO; }
+"char"		{ yylval.label = "char"; return TK_TIPO; }
 
 "boolean"	{ yylval.label = "boolean"; return TK_TIPO; }
 

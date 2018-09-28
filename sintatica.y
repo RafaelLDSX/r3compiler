@@ -5,7 +5,6 @@
 #include "helper.cpp"
 
 
-
 using namespace std;
 
 
@@ -59,7 +58,7 @@ E 			: E '+' E
 				$$.tipo = checarOp("+", $1.tipo, $3.tipo);
 				string thisOp = $1.label + " + " + $3.label;
 				if ($$.tipo == ""){
-					yyerror("no op defined for these types\n");
+					yyerror("no op defined for these types\nLine: " + to_string(lineNumber) + "\n");
 				}
 				$$.label = nameGen();
 				if ($1.tipo != $$.tipo){
@@ -80,7 +79,7 @@ E 			: E '+' E
 				$$.tipo = checarOp("-", $1.tipo, $3.tipo);
 				string thisOp = $1.label + " - " + $3.label;
 				if ($$.tipo == ""){
-					yyerror("no op defined for these types\n");
+					yyerror("no op defined for these types\nLine: " + to_string(lineNumber) + "\n");
 				}
 				$$.label = nameGen();
 				if ($1.tipo != $$.tipo){
@@ -101,7 +100,7 @@ E 			: E '+' E
 				$$.tipo = checarOp("/", $1.tipo, $3.tipo);
 				string thisOp = $1.label + " / " + $3.label;
 				if ($$.tipo == ""){
-					yyerror("no op defined for these types\n");
+					yyerror("no op defined for these types\nLine: " + to_string(lineNumber) + "\n");
 				}
 				$$.label = nameGen();
 				if ($1.tipo != $$.tipo){
@@ -122,7 +121,7 @@ E 			: E '+' E
 				$$.tipo = checarOp("*", $1.tipo, $3.tipo);
 				string thisOp = $1.label + " * " + $3.label;
 				if ($$.tipo == ""){
-					yyerror("no op defined for these types\n");
+					yyerror("no op defined for these types\nLine: " + to_string(lineNumber) + "\n");
 				}
 				$$.label = nameGen();
 				if ($1.tipo != $$.tipo){
@@ -158,7 +157,7 @@ E 			: E '+' E
 			| TK_TIPO TK_ID
 			{
 				if (isIdDeclared($2.label)){
-					yyerror("id already declared\n");
+					yyerror("id already declared\nLine: " + to_string(lineNumber) + "\n");
 				}
 				$2.traducao = nameGen();
 				$2.tipo = $1.label;
@@ -168,12 +167,17 @@ E 			: E '+' E
 			| TK_ID '=' E
 			{
 				if (isIdDeclared($1.label)){
-					
-					$1.traducao = getTempName($1.label);
-					$$.traducao = $3.traducao +"\t" + $1.traducao + " = " + $3.label + ";\n";
+					$1.tipo = getType($1.label);
+					if ($1.tipo == $3.tipo){
+						$1.traducao = getTempName($1.label);
+						$$.traducao = $3.traducao + "\t" + $1.traducao + " = " + $3.label + ";\n";
+					}
+					else{
+						yyerror("id of type " + $1.tipo + " can not be of type " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+					}
 				}
 				else{
-					yyerror("id not declared\n");
+					yyerror("id not declared\nLine: " + to_string(lineNumber) + "\n");
 				}
 			}
 			| TK_ID
@@ -184,7 +188,7 @@ E 			: E '+' E
 					$$.tipo = matriz[2][aux];
 				}
 				else{
-					yyerror("id not declared\n");
+					yyerror("id not declared\nLine: " + to_string(lineNumber) + "\n");
 				}
 			} 
 			;
