@@ -13,7 +13,7 @@ int yylex(void);
 void yyerror(string);
 %}
 
-%token TK_NUM TK_REAL
+%token TK_NUM TK_REAL TK_BOOL
 %token TK_MAIN TK_ID TK_TIPO
 %token TK_FIM TK_ERROR
 
@@ -54,87 +54,69 @@ COMANDO 	: E ';'
 
 E 			: E '+' E
 			{
-				string preTraducao =  $1.traducao + $3.traducao;
-				$$.tipo = checarOp("+", $1.tipo, $3.tipo);
-				string thisOp = $1.label + " + " + $3.label;
-				if ($$.tipo == ""){
-					yyerror("no op defined for these types\nLine: " + to_string(lineNumber) + "\n");
+				switch(ajeitarExpressao($$, $1, "+", $3)){
+					case -1:
+						yyerror("no operation of type '+' defined for types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+					case -2:
+						yyerror("cannot convert types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+					case 1:
+						break;
 				}
-				$$.label = nameGen();
-				if ($1.tipo != $$.tipo){
-					string aux = nameGen();
-					preTraducao = preTraducao + "\t" + $$.tipo + " " + aux + " = (" + $$.tipo + ") " + $1.label + ";\n";
-					thisOp = aux + " + " + $3.label;
-				}
-				else if ($3.tipo != $$.tipo){
-					string aux = nameGen();
-					preTraducao = preTraducao + "\t" + $$.tipo + " " + aux + " = (" + $$.tipo + ") " + $3.label + ";\n";
-					thisOp = $1.label + " + " + aux;
-				}
-				$$.traducao = preTraducao + "\t" + $$.tipo + " " + $$.label + ";\n" + "\t" + $$.label + " = " + thisOp + ";\n";
 			}
 			| E '-' E
 			{
-				string preTraducao =  $1.traducao + $3.traducao;
-				$$.tipo = checarOp("-", $1.tipo, $3.tipo);
-				string thisOp = $1.label + " - " + $3.label;
-				if ($$.tipo == ""){
-					yyerror("no op defined for these types\nLine: " + to_string(lineNumber) + "\n");
+				switch(ajeitarExpressao($$, $1, "-", $3)){
+					case -1:
+						yyerror("no operation of type '-' defined for types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+					case -2:
+						yyerror("cannot convert types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+					case 1:
+						break;
 				}
-				$$.label = nameGen();
-				if ($1.tipo != $$.tipo){
-					string aux = nameGen();
-					preTraducao = preTraducao + "\t" + $$.tipo + " " + aux + " = (" + $$.tipo + ") " + $1.label + ";\n";
-					thisOp = aux + " - " + $3.label;
-				}
-				else if ($3.tipo != $$.tipo){
-					string aux = nameGen();
-					preTraducao = preTraducao + "\t" + $$.tipo + " " + aux + " = (" + $$.tipo + ") " + $3.label + ";\n";
-					thisOp = $1.label + " - " + aux;
-				}
-				$$.traducao = preTraducao + "\t" + $$.tipo + " " + $$.label + ";\n" + "\t" + $$.label + " = " + thisOp + ";\n";
 			}
 			| E '/' E
 			{
-				string preTraducao =  $1.traducao + $3.traducao;
-				$$.tipo = checarOp("/", $1.tipo, $3.tipo);
-				string thisOp = $1.label + " / " + $3.label;
-				if ($$.tipo == ""){
-					yyerror("no op defined for these types\nLine: " + to_string(lineNumber) + "\n");
+				switch(ajeitarExpressao($$, $1, "/", $3)){
+					case -1:
+						yyerror("no operation of type '/' defined for types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+					case -2:
+						yyerror("cannot convert types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+					case 1:
+						break;
 				}
-				$$.label = nameGen();
-				if ($1.tipo != $$.tipo){
-					string aux = nameGen();
-					preTraducao = preTraducao + "\t" + $$.tipo + " " + aux + " = (" + $$.tipo + ") " + $1.label + ";\n";
-					thisOp = aux + " / " + $3.label;
-				}
-				else if ($3.tipo != $$.tipo){
-					string aux = nameGen();
-					preTraducao = preTraducao + "\t" + $$.tipo + " " + aux + " = (" + $$.tipo + ") " + $3.label + ";\n";
-					thisOp = $1.label + " / " + aux;
-				}
-				$$.traducao = preTraducao + "\t" + $$.tipo + " " + $$.label + ";\n" + "\t" + $$.label + " = " + thisOp + ";\n";
 			}
 			| E '*' E
 			{
-				string preTraducao =  $1.traducao + $3.traducao;
-				$$.tipo = checarOp("*", $1.tipo, $3.tipo);
-				string thisOp = $1.label + " * " + $3.label;
-				if ($$.tipo == ""){
-					yyerror("no op defined for these types\nLine: " + to_string(lineNumber) + "\n");
+				switch(ajeitarExpressao($$, $1, "*", $3)){
+					case -1:
+						yyerror("no operation of type '*' defined for types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+					case -2:
+						yyerror("cannot convert types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+					case 1:
+						break;
 				}
-				$$.label = nameGen();
-				if ($1.tipo != $$.tipo){
-					string aux = nameGen();
-					preTraducao = preTraducao + "\t" + $$.tipo + " " + aux + " = (" + $$.tipo + ") " + $1.label + ";\n";
-					thisOp = aux + " * " + $3.label;
+			}
+			| E '<' E
+			{
+				switch(ajeitarExpressao($$, $1, "<", $3)){
+					case -1:
+						yyerror("no operation of type '<' defined for types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+					case -2:
+						yyerror("cannot convert types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+					case 1:
+						break;
 				}
-				else if ($3.tipo != $$.tipo){
-					string aux = nameGen();
-					preTraducao = preTraducao + "\t" + $$.tipo + " " + aux + " = (" + $$.tipo + ") " + $3.label + ";\n";
-					thisOp = $1.label + " * " + aux;
+			}
+			| E '>' E
+			{
+				switch(ajeitarExpressao($$, $1, ">", $3)){
+					case -1:
+						yyerror("no operation of type '>' defined for types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+					case -2:
+						yyerror("cannot convert types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+					case 1:
+						break;
 				}
-				$$.traducao = preTraducao + "\t" + $$.tipo + " " + $$.label + ";\n" + "\t" + $$.label + " = " + thisOp + ";\n";
 			}
 			| '(' E ')'
 			{
@@ -154,6 +136,12 @@ E 			: E '+' E
 				$$.tipo = "float";
 				$$.traducao = "\t" + $$.tipo + " " + $$.label + " = " + $1.traducao + ";\n";
 			}
+			| TK_BOOL
+			{
+				$$.label = nameGen();
+				$$.tipo = "boolean";
+				$$.traducao = "\t" + $$.tipo + " " + $$.label + " = " + $1.traducao + ";\n";
+			}
 			| TK_TIPO TK_ID
 			{
 				if (isIdDeclared($2.label)){
@@ -166,15 +154,22 @@ E 			: E '+' E
 			}
 			| TK_ID '=' E
 			{
+				string preTraducao = $3.traducao;
+				string atribuicao = "";
 				if (isIdDeclared($1.label)){
 					$1.tipo = getType($1.label);
-					if ($1.tipo == $3.tipo){
-						$1.traducao = getTempName($1.label);
-						$$.traducao = $3.traducao + "\t" + $1.traducao + " = " + $3.label + ";\n";
+					if ($1.tipo != $3.tipo){
+						if (ehConversivel($1.tipo, $3.tipo)){
+							string novoTemp = nameGen();
+							preTraducao = preTraducao + "\t" + $3.tipo + " " + novoTemp + ";\n";
+							changeTempName($1.label, novoTemp);
+						}
+						else{
+							yyerror("id of type " + $1.tipo + " can not be of type " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+						}
 					}
-					else{
-						yyerror("id of type " + $1.tipo + " can not be of type " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
-					}
+					$1.traducao = getTempName($1.label);
+					$$.traducao = preTraducao + "\t" + $1.traducao + " = " + $3.label + ";\n";
 				}
 				else{
 					yyerror("id not declared\nLine: " + to_string(lineNumber) + "\n");
@@ -202,6 +197,7 @@ int yyparse();
 int main( int argc, char* argv[] )	
 {
 	criarVetorOp();
+	criarVetorConversoes();
 	printVetorOp();
 	yyparse();
 

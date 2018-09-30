@@ -31,13 +31,14 @@ ID {LETRA}({LETRA}|{NUM})*
 "boolean"	{ yylval.label = "boolean"; return TK_TIPO; }
 
 
-
 [(){}[\];,]	{ return *yytext; }
 
-[+\-*/=]	{ return *yytext; }
+[+\-*/=<>]	{ return *yytext; }
 
 {NUM}		{ yylval.traducao = yytext; return TK_NUM; }
 {REAL}		{ yylval.traducao = yytext; return TK_REAL; }
+"true"		{ yylval.traducao = "1"; return TK_BOOL; }
+"false"		{ yylval.traducao = "0"; return TK_BOOL; }
 {ID}		{ yylval.label = yytext; return TK_ID; }
 
 .			{ *yytext; }

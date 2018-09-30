@@ -24,11 +24,37 @@ typedef struct ops
 	string resultado;
 } OPERACOES;
 
+struct Conversao
+{
+	string tipo;
+	string tipoConvertido;
+};
+
 static int lineNumber = 1;
 static int contadorMatriz = 0;
 static string matriz[3][MATRIX_SIZE];
 static int counter = 0;
 static vector<OPERACOES> operacoes;
+static vector<Conversao> conversoes;
+
+string nameGen();
+int searchMatrix(string id);
+bool isIdDeclared(string id);
+void addMatrix(atributos n);
+int ajeitarExpressao(atributos &resultado, atributos op1, string operador, atributos op2);
+bool precisaDeConversao(string opA, string opB);
+int getIdIndex(string id);
+string getType(string s);
+string getTempName(string s);
+void changeTempName(string tipo);
+void inserirVetorOp(string op, string a, string b, string r);
+void criarVetorOp();
+void printVetorOp();
+void inserirVetorConversoes(string tipo, string tipoConvertido);
+void criarVetorConversoes();
+string checarOp(string op, string opA, string opB);
+bool ehConversivel(string tipo, string candidato);
+int decidirConversao(string opA, string opB);
 
 string nameGen(){
 	counter++;
@@ -60,16 +86,77 @@ void addMatrix(atributos n){
 	contadorMatriz++;
 }
 
-string getType(string s){
+int ajeitarExpressao(atributos &resultado, atributos op1, string operador, atributos op2){
+	resultado.tipo = checarOp(operador, op1.tipo, op2.tipo);
+	if (resultado.tipo == ""){
+		return -1;
+	}
+	resultado.label = nameGen();
+
+	//declaração e calculo dos operandos que serão utilizados
+	resultado.traducao = op1.traducao + op2.traducao + "\t" + resultado.tipo + " " + resultado.label + ";\n";
+
+	//operação propriamente dita
+	string operacao = "\t" + resultado.label + " = " + op1.label + " " + operador + " " + op2.label + ";\n";
+
+	string conversao = "";
+
+	string aux;
+
+	//se for necessaria a conversao de um dos operandos
+	if (precisaDeConversao(op1.tipo, op2.tipo)){
+		switch(decidirConversao(op1.tipo, op2.tipo)){
+			case 1:
+				aux = nameGen();
+				conversao = "\t" + resultado.tipo + " " + aux + " = (" + resultado.tipo + ") " + op1.label + ";\n";
+				operacao = "\t" + resultado.label + " = " + aux + " " + operador + " " + op2.label + ";\n";
+				break;
+			case 2:
+				aux = nameGen();
+				conversao = "\t" + resultado.tipo + " " + aux + " = (" + resultado.tipo + ") " + op2.label + ";\n";
+				operacao = "\t" + resultado.label + " = " + op1.label + " " + operador + " " + aux + ";\n";
+				break;
+			case 0:
+				return -2;
+		}
+		if (op1.tipo != resultado.tipo){
+			string aux = nameGen();
+			conversao = "\t" + resultado.tipo + " " + aux + " = (" + resultado.tipo + ") " + op1.label + ";\n";
+			operacao = "\t" + resultado.label + " = " + aux + " " + operador + " " + op2.label + ";\n";
+		}
+		else{
+			string aux = nameGen();
+			conversao = "\t" + resultado.tipo + " " + aux + " = (" + resultado.tipo + ") " + op2.label + ";\n";
+			operacao = "\t" + resultado.label + " = " + op1.label + " " + operador + " " + aux + ";\n";
+		}
+	}
+	resultado.traducao = resultado.traducao + conversao + operacao;
+	return 1;
+}
+
+int getIdIndex(string id){
 	int aux;
-	for (aux = 0; matriz[0][aux] != s && aux < contadorMatriz; aux++){}
+	for (aux = 0; matriz[0][aux] != id && aux < contadorMatriz; aux++){}
+	if (aux < contadorMatriz){
+		return aux;
+	}
+	return -1;
+}
+
+string getType(string id){
+	int aux = getIdIndex(id);
 	return matriz[2][aux];
 }
 
-string getTempName(string s){
-	int aux;
-	for (aux = 0; matriz[0][aux] != s && aux < contadorMatriz; aux++){}
+string getTempName(string id){
+	int aux = getIdIndex(id);
 	return matriz[1][aux];
+}
+
+void changeTempName(string id, string tipo){
+	int aux = getIdIndex(id);
+	matriz[1][aux] = tipo;
+
 }
 
 void inserirVetorOp(string op, string a, string b, string r){
@@ -94,6 +181,13 @@ void criarVetorOp(){
 	inserirVetorOp("*", "int", "int", "int");
 	inserirVetorOp("*", "int", "float", "float");
 	inserirVetorOp("*", "float", "float", "float");
+	//relacionais
+	inserirVetorOp(">", "int", "int", "boolean");
+	inserirVetorOp(">", "int", "float", "boolean");
+	inserirVetorOp(">", "float", "float", "boolean");
+	inserirVetorOp("<", "int", "int", "boolean");
+	inserirVetorOp("<", "int", "float", "boolean");
+	inserirVetorOp("<", "float", "float", "boolean");
 
 
 }
@@ -109,6 +203,15 @@ void printVetorOp(){
 	cout << "\n";
 }
 
+void inserirVetorConversoes(string tipo, string tipoConvertido){
+	Conversao aux = {tipo, tipoConvertido};
+	conversoes.push_back(aux);
+}
+
+void criarVetorConversoes(){
+	inserirVetorConversoes("int", "float");
+}
+
 string checarOp(string op, string opA, string opB){
 	for (int i = 0; i < operacoes.size(); i++){
 		if (operacoes[i].op == op){
@@ -119,4 +222,32 @@ string checarOp(string op, string opA, string opB){
 		}
 	}
 	return "";
+}
+
+bool precisaDeConversao(string opA, string opB){
+	if (opA != opB){
+		return true;
+	}
+	return false;
+}
+
+bool ehConversivel(string tipo, string candidato){
+	for (int i = 0; i < conversoes.size(); i++){
+		if (tipo == conversoes[i].tipo && candidato == conversoes[i].tipoConvertido){
+			return true;
+		}
+	}
+	return false;
+}
+
+int decidirConversao(string opA, string opB){
+	if (ehConversivel(opA, opB)){
+		return 1;
+	}
+	else if (ehConversivel(opB, opA)){
+		return 2;
+	}
+	else{
+		return 0;
+	}
 }
