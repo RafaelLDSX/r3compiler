@@ -1,13 +1,12 @@
 # r3compiler
 
-## Sobre
-A finalidade deste projeto é entender melhor o funcionamento de um compilador, criando uma linguagém própria e um compilador que traduz na linguagem-alvo (nesse caso específico, um C-like com algumas limitações).
-
 ## Features
 
-1. Operações aritméticas básicas
-2. Tipo int
+1. Operações aritméticas básicas e relacionais
+2. Tipos int, float e boolean
 3. Declaração e atribuição de variáveis
+4. Verificação de tipo para as operações
+5. Coerções
 
 ## Como usar
 
