@@ -13,15 +13,17 @@ int yylex(void);
 void yyerror(string);
 %}
 
+%token TK_SOMA TK_SUBTRACAO TK_DIVISAO TK_MULTIPLICACAO TK_MENOR TK_MAIOR TK_MENORIGUAL TK_MAIORIGUAL TK_ATRIBUICAO TK_IGUAL TK_DIFERENTE
 %token TK_NUM TK_REAL TK_BOOL
 %token TK_MAIN TK_ID TK_TIPO
 %token TK_FIM TK_ERROR
 
 %start S
 
-%right '='
-%left '+' '-'
-%left '*' '/'
+%right TK_ATRIBUICAO
+%left TK_SOMA TK_SUBTRACAO
+%left TK_MULTIPLICACAO TK_DIVISAO
+%left TK_MENOR TK_MENORIGUAL TK_MAIOR TK_MAIORIGUAL TK_IGUAL TK_DIFERENTE
 
 %%
 
@@ -52,9 +54,9 @@ COMANDOS	: COMANDO COMANDOS
 COMANDO 	: E ';'
 			;
 
-E 			: E '+' E
+E 			: E TK_SOMA E
 			{
-				switch(ajeitarExpressao($$, $1, "+", $3)){
+				switch(ajeitarExpressao($$, $1, $2.label, $3)){
 					case -1:
 						yyerror("no operation of type '+' defined for types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
 					case -2:
@@ -63,9 +65,9 @@ E 			: E '+' E
 						break;
 				}
 			}
-			| E '-' E
+			| E TK_SUBTRACAO E
 			{
-				switch(ajeitarExpressao($$, $1, "-", $3)){
+				switch(ajeitarExpressao($$, $1, $2.label, $3)){
 					case -1:
 						yyerror("no operation of type '-' defined for types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
 					case -2:
@@ -74,9 +76,9 @@ E 			: E '+' E
 						break;
 				}
 			}
-			| E '/' E
+			| E TK_DIVISAO E
 			{
-				switch(ajeitarExpressao($$, $1, "/", $3)){
+				switch(ajeitarExpressao($$, $1, $2.label, $3)){
 					case -1:
 						yyerror("no operation of type '/' defined for types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
 					case -2:
@@ -85,9 +87,9 @@ E 			: E '+' E
 						break;
 				}
 			}
-			| E '*' E
+			| E TK_MULTIPLICACAO E
 			{
-				switch(ajeitarExpressao($$, $1, "*", $3)){
+				switch(ajeitarExpressao($$, $1, $2.label, $3)){
 					case -1:
 						yyerror("no operation of type '*' defined for types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
 					case -2:
@@ -96,9 +98,9 @@ E 			: E '+' E
 						break;
 				}
 			}
-			| E '<' E
+			| E TK_MENOR E
 			{
-				switch(ajeitarExpressao($$, $1, "<", $3)){
+				switch(ajeitarExpressao($$, $1, $2.label, $3)){
 					case -1:
 						yyerror("no operation of type '<' defined for types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
 					case -2:
@@ -107,9 +109,9 @@ E 			: E '+' E
 						break;
 				}
 			}
-			| E '>' E
+			| E TK_MAIOR E
 			{
-				switch(ajeitarExpressao($$, $1, ">", $3)){
+				switch(ajeitarExpressao($$, $1, $2.label, $3)){
 					case -1:
 						yyerror("no operation of type '>' defined for types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
 					case -2:
@@ -152,7 +154,7 @@ E 			: E '+' E
 				addMatrix($2);
 				$$.traducao = "\t" + $1.label + " " + $2.traducao + ";\n";
 			}
-			| TK_ID '=' E
+			| TK_ID TK_ATRIBUICAO E
 			{
 				string preTraducao = $3.traducao;
 				string atribuicao = "";

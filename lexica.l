@@ -33,6 +33,19 @@ ID {LETRA}({LETRA}|{NUM})*
 
 [(){}[\];,]	{ return *yytext; }
 
+"+"			{yylval.label = yytext; return TK_SOMA; }
+"-"			{yylval.label = yytext; return TK_SUBTRACAO; }
+"/"			{yylval.label = yytext; return TK_DIVISAO; }
+"*"			{yylval.label = yytext; return TK_MULTIPLICACAO; }
+"="			{yylval.label = yytext; return TK_ATRIBUICAO; }
+"<"			{yylval.label = yytext; return TK_MENOR; }
+">"			{yylval.label = yytext; return TK_MAIOR; }
+"<="		{yylval.label = yytext; return TK_MENORIGUAL; }
+">="		{yylval.label = yytext; return TK_MAIORIGUAL; }
+"=="		{yylval.label = yytext; return TK_IGUAL; }
+"!="		{yylval.label = yytext; return TK_DIFERENTE; }
+
+
 [+\-*/=<>]	{ return *yytext; }
 
 {NUM}		{ yylval.traducao = yytext; return TK_NUM; }
