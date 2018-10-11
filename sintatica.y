@@ -52,7 +52,49 @@ COMANDOS	: COMANDO COMANDOS
 			;
 
 COMANDO 	: E ';'
+			{
+				$$.traducao = $1.traducao;
+			}
+			| STMT ';'
+			{
+				$$.traducao = $1.traducao;
+			}
+			| BLOCO
 			;
+
+STMT		: TK_TIPO TK_ID
+			{
+				if (isIdDeclared($2.label)){
+					yyerror("id already declared\nLine: " + to_string(lineNumber) + "\n");
+				}
+				$2.traducao = nameGen();
+				$2.tipo = $1.label;
+				addMatrix($2);
+				$$.traducao = "\t" + $1.label + " " + $2.traducao + ";\n";
+			}
+			| TK_ID TK_ATRIBUICAO E
+			{
+				string preTraducao = $3.traducao;
+				string atribuicao = "";
+				if (isIdDeclared($1.label)){
+					$1.tipo = getType($1.label);
+					if ($1.tipo != $3.tipo){
+						if (ehConversivel($1.tipo, $3.tipo)){
+							string novoTemp = nameGen();
+							preTraducao = preTraducao + "\t" + $3.tipo + " " + novoTemp + ";\n";
+							changeTempName($1.label, novoTemp);
+						}
+						else{
+							yyerror("id of type " + $1.tipo + " can not be of type " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+						}
+					}
+					$1.traducao = getTempName($1.label);
+					$$.traducao = preTraducao + "\t" + $1.traducao + " = " + $3.label + ";\n";
+				}
+				else{
+					yyerror("id not declared\nLine: " + to_string(lineNumber) + "\n");
+				}
+			}
 
 E 			: E TK_SOMA E
 			{
@@ -144,16 +186,6 @@ E 			: E TK_SOMA E
 				$$.tipo = "boolean";
 				$$.traducao = "\t" + $$.tipo + " " + $$.label + " = " + $1.traducao + ";\n";
 			}
-			| TK_TIPO TK_ID
-			{
-				if (isIdDeclared($2.label)){
-					yyerror("id already declared\nLine: " + to_string(lineNumber) + "\n");
-				}
-				$2.traducao = nameGen();
-				$2.tipo = $1.label;
-				addMatrix($2);
-				$$.traducao = "\t" + $1.label + " " + $2.traducao + ";\n";
-			}
 			| TK_ID TK_ATRIBUICAO E
 			{
 				string preTraducao = $3.traducao;
@@ -183,6 +215,7 @@ E 			: E TK_SOMA E
 				if(aux != -1){
 					$$.label = matriz[1][aux];
 					$$.tipo = matriz[2][aux];
+					$$.traducao = "";
 				}
 				else{
 					yyerror("id not declared\nLine: " + to_string(lineNumber) + "\n");
