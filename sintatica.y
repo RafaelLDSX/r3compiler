@@ -67,10 +67,10 @@ STMT		: TK_TIPO TK_ID
 				if (isIdDeclared($2.label)){
 					yyerror("id already declared\nLine: " + to_string(lineNumber) + "\n");
 				}
-				$2.traducao = nameGen();
+				$2.tempLabel = nameGen();
 				$2.tipo = $1.label;
 				addMatrix($2);
-				$$.traducao = "\t" + $1.label + " " + $2.traducao + ";\n";
+				$$.traducao = "\t" + $1.label + " " + $2.tempLabel + ";\n";
 			}
 			| TK_ID TK_ATRIBUICAO E
 			{
@@ -165,11 +165,13 @@ E 			: E TK_SOMA E
 			| '(' E ')'
 			{
 				$$.label = $2.label;
+				$$.tempLabel = $2.tempLabel;
 				$$.traducao =  $2.traducao;
 			}
 			| TK_NUM
 			{
 				$$.label = nameGen();
+				$$.tempLabel = $$.label;
 				$$.tipo = "int";
 				$$.traducao = "\t" + $$.tipo + " " + $$.label + " = " + $1.traducao + ";\n";
 				
@@ -177,12 +179,14 @@ E 			: E TK_SOMA E
 			| TK_REAL
 			{
 				$$.label = nameGen();
+				$$.tempLabel = $$.label;
 				$$.tipo = "float";
 				$$.traducao = "\t" + $$.tipo + " " + $$.label + " = " + $1.traducao + ";\n";
 			}
 			| TK_BOOL
 			{
 				$$.label = nameGen();
+				$$.tempLabel = $$.label;
 				$$.tipo = "boolean";
 				$$.traducao = "\t" + $$.tipo + " " + $$.label + " = " + $1.traducao + ";\n";
 			}
@@ -211,11 +215,13 @@ E 			: E TK_SOMA E
 			}
 			| TK_ID
 			{
-				int aux = searchMatrix($1.label);				//isIdDeclared não traz o índice, por isso não é usado aqui
-				if(aux != -1){
-					$$.label = matriz[1][aux];
-					$$.tipo = matriz[2][aux];
-					$$.traducao = "";
+				atributos aux = procurarNoEscopo($1.label);
+				if(aux.label !=  "NULL"){
+					// $$.label = matriz[1][aux];
+					// $$.tipo = matriz[2][aux];
+					// $$.traducao = "";
+					$$ = aux;
+					$$.label = $$.tempLabel;							//gambiarra
 				}
 				else{
 					yyerror("id not declared\nLine: " + to_string(lineNumber) + "\n");
@@ -231,6 +237,7 @@ int yyparse();
 
 int main( int argc, char* argv[] )	
 {
+	criarTabelaDeSimbolos();
 	criarVetorOp();
 	criarVetorConversoes();
 	printVetorOp();

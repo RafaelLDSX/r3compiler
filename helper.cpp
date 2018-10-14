@@ -12,6 +12,7 @@ using namespace std;
 struct atributos
 {
 	string label;
+	string tempLabel;
 	string traducao;
 	string tipo;
 };
@@ -36,6 +37,7 @@ static string matriz[3][MATRIX_SIZE];
 static int counter = 0;
 static vector<OPERACOES> operacoes;
 static vector<Conversao> conversoes;
+static vector< vector<atributos> > pilhaDeTabelaDeSimbolos;
 
 string nameGen();
 int searchMatrix(string id);
@@ -55,6 +57,9 @@ void criarVetorConversoes();
 string checarOp(string op, string opA, string opB);
 bool ehConversivel(string tipo, string candidato);
 int decidirConversao(string opA, string opB);
+void criarTabelaDeSimbolos();
+void inserirNaTabelaDeSimbolos(atributos n);
+atributos procurarNoEscopo(string n);
 
 string nameGen(){
 	counter++;
@@ -73,17 +78,23 @@ int searchMatrix(string id){
 }
 
 bool isIdDeclared(string id){
-	if (searchMatrix(id) != -1){
-		return true;
+	// if (searchMatrix(id) != -1){
+	// 	return true;
+	// }
+	// return false;
+	atributos aux = procurarNoEscopo(id);
+	if (aux.label ==  "NULL"){
+		return false;
 	}
-	return false;
+	return true;
 }
 
 void addMatrix(atributos n){
-	matriz[0][contadorMatriz] = n.label;
-	matriz[1][contadorMatriz] = n.traducao;
-	matriz[2][contadorMatriz] = n.tipo;
-	contadorMatriz++;
+	// matriz[0][contadorMatriz] = n.label;
+	// matriz[1][contadorMatriz] = n.traducao;
+	// matriz[2][contadorMatriz] = n.tipo;
+	// contadorMatriz++;
+	pilhaDeTabelaDeSimbolos.back().push_back(n);
 }
 
 int ajeitarExpressao(atributos &resultado, atributos op1, string operador, atributos op2){
@@ -92,6 +103,7 @@ int ajeitarExpressao(atributos &resultado, atributos op1, string operador, atrib
 		return -1;
 	}
 	resultado.label = nameGen();
+	resultado.tempLabel = resultado.label;
 
 	//declaração e calculo dos operandos que serão utilizados
 	resultado.traducao = op1.traducao + op2.traducao + "\t" + resultado.tipo + " " + resultado.label + ";\n";
@@ -144,13 +156,13 @@ int getIdIndex(string id){
 }
 
 string getType(string id){
-	int aux = getIdIndex(id);
-	return matriz[2][aux];
+	atributos aux = procurarNoEscopo(id);
+	return aux.tipo;
 }
 
 string getTempName(string id){
-	int aux = getIdIndex(id);
-	return matriz[1][aux];
+	atributos aux = procurarNoEscopo(id);
+	return aux.tempLabel;
 }
 
 void changeTempName(string id, string tipo){
@@ -250,4 +262,34 @@ int decidirConversao(string opA, string opB){
 	else{
 		return 0;
 	}
+}
+
+void criarTabelaDeSimbolos(){
+	vector<atributos> table;
+	pilhaDeTabelaDeSimbolos.push_back(table);
+}
+
+void inserirNaTabelaDeSimbolos(atributos n){
+	pilhaDeTabelaDeSimbolos.back().push_back(n);
+}
+
+atributos procurarNoEscopo(string n){
+	int fim;
+	vector<vector<atributos>> keep;
+	for(fim = pilhaDeTabelaDeSimbolos.size() - 1; fim >= 0; fim--){
+		vector<atributos> aux = pilhaDeTabelaDeSimbolos.at(fim);
+		for(int i = 0; i < aux.size(); i++){
+			if(aux[i].label == n){
+				return aux.at(i);
+			}
+		}
+		keep.push_back(aux);
+		pilhaDeTabelaDeSimbolos.pop_back();
+	}
+	atributos aux = {"NULL", "NULL", "NULL", "NULL"};
+	while(keep.size() > 0){
+		pilhaDeTabelaDeSimbolos.push_back(keep.back());
+		keep.pop_back();
+	}
+	return aux;
 }
