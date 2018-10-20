@@ -29,7 +29,7 @@ void yyerror(string);
 
 S 			: TK_TIPO TK_MAIN '(' ')' BLOCO
 			{
-				cout << "/*R3 Compiler*/\n" << "#include <iostream>\n#include<string.h>\n#include<stdio.h>\nint main(void)\n{\n" << $5.traducao << "\treturn 0;\n}" << endl; 
+				cout << "/*R3 Compiler*/\n" << "#include <iostream>\n#include<string.h>\n#include<stdio.h>\nint main(void)\n{\n" << declaracoes + $5.traducao << "\treturn 0;\n}" << endl; 
 			}
 			;
 
@@ -60,6 +60,9 @@ COMANDO 	: E ';'
 				$$.traducao = $1.traducao;
 			}
 			| BLOCO
+			{
+				$$.traducao = $1.traducao;
+			}
 			;
 
 STMT		: TK_TIPO TK_ID
@@ -70,7 +73,8 @@ STMT		: TK_TIPO TK_ID
 				$2.tempLabel = nameGen();
 				$2.tipo = $1.label;
 				addMatrix($2);
-				$$.traducao = "\t" + $1.label + " " + $2.tempLabel + ";\n";
+				$$.traducao = "";
+				declaracoes += "\t" + $1.label + " " + $2.tempLabel + ";\n";
 			}
 			| TK_ID TK_ATRIBUICAO E
 			{
@@ -173,7 +177,8 @@ E 			: E TK_SOMA E
 				$$.label = nameGen();
 				$$.tempLabel = $$.label;
 				$$.tipo = "int";
-				$$.traducao = "\t" + $$.tipo + " " + $$.label + " = " + $1.traducao + ";\n";
+				$$.traducao = "";
+				declaracoes += "\t" + $$.tipo + " " + $$.label + " = " + $1.traducao + ";\n";
 				
 			}
 			| TK_REAL
@@ -181,46 +186,48 @@ E 			: E TK_SOMA E
 				$$.label = nameGen();
 				$$.tempLabel = $$.label;
 				$$.tipo = "float";
-				$$.traducao = "\t" + $$.tipo + " " + $$.label + " = " + $1.traducao + ";\n";
+				$$.traducao = "";
+				declaracoes += "\t" + $$.tipo + " " + $$.label + " = " + $1.traducao + ";\n";
 			}
 			| TK_BOOL
 			{
 				$$.label = nameGen();
 				$$.tempLabel = $$.label;
 				$$.tipo = "boolean";
-				$$.traducao = "\t" + $$.tipo + " " + $$.label + " = " + $1.traducao + ";\n";
+				$$.traducao = "";
+				declaracoes += "\t" + $$.tipo + " " + $$.label + " = " + $1.traducao + ";\n";
 			}
-			| TK_ID TK_ATRIBUICAO E
-			{
-				string preTraducao = $3.traducao;
-				string atribuicao = "";
-				if (isIdDeclared($1.label)){
-					$1.tipo = getType($1.label);
-					if ($1.tipo != $3.tipo){
-						if (ehConversivel($1.tipo, $3.tipo)){
-							string novoTemp = nameGen();
-							preTraducao = preTraducao + "\t" + $3.tipo + " " + novoTemp + ";\n";
-							changeTempName($1.label, novoTemp);
-						}
-						else{
-							yyerror("id of type " + $1.tipo + " can not be of type " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
-						}
-					}
-					$1.traducao = getTempName($1.label);
-					$$.traducao = preTraducao + "\t" + $1.traducao + " = " + $3.label + ";\n";
-				}
-				else{
-					yyerror("id not declared\nLine: " + to_string(lineNumber) + "\n");
-				}
-			}
+			// | TK_ID TK_ATRIBUICAO E
+			// {
+			// 	string preTraducao = $3.traducao;
+			// 	string atribuicao = "";
+			// 	if (isIdDeclared($1.label)){
+			// 		$1.tipo = getType($1.label);
+			// 		if ($1.tipo != $3.tipo){
+			// 			if (ehConversivel($1.tipo, $3.tipo)){
+			// 				string novoTemp = nameGen();
+			// 				preTraducao = preTraducao + "\t" + $3.tipo + " " + novoTemp + ";\n";
+			// 				changeTempName($1.label, novoTemp);
+			// 			}
+			// 			else{
+			// 				yyerror("id of type " + $1.tipo + " can not be of type " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+			// 			}
+			// 		}
+			// 		$1.traducao = getTempName($1.label);
+			// 		$$.traducao = preTraducao + "\t" + $1.traducao + " = " + $3.label + ";\n";
+			// 	}
+			// 	else{
+			// 		yyerror("id not declared\nLine: " + to_string(lineNumber) + "\n");
+			// 	}
+			// }
 			| TK_ID
 			{
 				atributos aux = procurarNoEscopo($1.label);
 				if(aux.label !=  "NULL"){
 					// $$.label = matriz[1][aux];
 					// $$.tipo = matriz[2][aux];
-					// $$.traducao = "";
 					$$ = aux;
+					$$.traducao = "";
 					$$.label = $$.tempLabel;							//gambiarra
 				}
 				else{

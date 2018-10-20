@@ -45,9 +45,6 @@ ID {LETRA}({LETRA}|{NUM})*
 "=="		{yylval.label = yytext; return TK_IGUAL; }
 "!="		{yylval.label = yytext; return TK_DIFERENTE; }
 
-
-[+\-*/=<>]	{ return *yytext; }
-
 {NUM}		{ yylval.traducao = yytext; return TK_NUM; }
 {REAL}		{ yylval.traducao = yytext; return TK_REAL; }
 "true"		{ yylval.traducao = "1"; return TK_BOOL; }

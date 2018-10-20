@@ -38,6 +38,7 @@ static int counter = 0;
 static vector<OPERACOES> operacoes;
 static vector<Conversao> conversoes;
 static vector< vector<atributos> > pilhaDeTabelaDeSimbolos;
+static string declaracoes = "";
 
 string nameGen();
 int searchMatrix(string id);
@@ -58,6 +59,7 @@ string checarOp(string op, string opA, string opB);
 bool ehConversivel(string tipo, string candidato);
 int decidirConversao(string opA, string opB);
 void criarTabelaDeSimbolos();
+void desempilharTabelaDeSimbolos();
 void inserirNaTabelaDeSimbolos(atributos n);
 atributos procurarNoEscopo(string n);
 
@@ -106,7 +108,8 @@ int ajeitarExpressao(atributos &resultado, atributos op1, string operador, atrib
 	resultado.tempLabel = resultado.label;
 
 	//declaração e calculo dos operandos que serão utilizados
-	resultado.traducao = op1.traducao + op2.traducao + "\t" + resultado.tipo + " " + resultado.label + ";\n";
+	resultado.traducao = op1.traducao + op2.traducao;
+	declaracoes += "\t" + resultado.tipo + " " + resultado.label + ";\n";
 
 	//operação propriamente dita
 	string operacao = "\t" + resultado.label + " = " + op1.label + " " + operador + " " + op2.label + ";\n";
@@ -292,4 +295,8 @@ atributos procurarNoEscopo(string n){
 		keep.pop_back();
 	}
 	return aux;
+}
+
+void desempilharTabelaDeSimbolos(){
+	pilhaDeTabelaDeSimbolos.pop_back();
 }
