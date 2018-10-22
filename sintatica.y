@@ -29,13 +29,18 @@ void yyerror(string);
 
 S 			: TK_TIPO TK_MAIN '(' ')' BLOCO
 			{
-				cout << "/*R3 Compiler*/\n" << "#include <iostream>\n#include<string.h>\n#include<stdio.h>\nint main(void)\n{\n" << declaracoes + $5.traducao << "\treturn 0;\n}" << endl; 
+				cout << "/*R3 Compiler*/\n" << "#include <iostream>\n#include<string.h>\n#include<stdio.h>\nint main(void)\n{\n" << "\t//declaracoes\n" << declaracoes << "\n" << $5.traducao << "\treturn 0;\n}" << endl; 
 			}
 			;
-
-BLOCO		: '{' COMANDOS '}'
+EMPILHA		:
 			{
-				$$.traducao = $2.traducao;
+				criarTabelaDeSimbolos();
+			}
+			;
+BLOCO		: EMPILHA '{' COMANDOS '}'
+			{
+				$$.traducao = $3.traducao;
+				desempilharTabelaDeSimbolos();
 			}
 			;
 

@@ -278,23 +278,18 @@ void inserirNaTabelaDeSimbolos(atributos n){
 
 atributos procurarNoEscopo(string n){
 	int fim;
-	vector<vector<atributos>> keep;
+	vector<atributos> aux;
 	for(fim = pilhaDeTabelaDeSimbolos.size() - 1; fim >= 0; fim--){
-		vector<atributos> aux = pilhaDeTabelaDeSimbolos.at(fim);
+		cout << "Tabela de simbolos de numero " << fim << "\n";
+		aux = pilhaDeTabelaDeSimbolos.at(fim);
 		for(int i = 0; i < aux.size(); i++){
 			if(aux[i].label == n){
 				return aux.at(i);
 			}
 		}
-		keep.push_back(aux);
-		pilhaDeTabelaDeSimbolos.pop_back();
 	}
-	atributos aux = {"NULL", "NULL", "NULL", "NULL"};
-	while(keep.size() > 0){
-		pilhaDeTabelaDeSimbolos.push_back(keep.back());
-		keep.pop_back();
-	}
-	return aux;
+	atributos aux2 = {"NULL", "NULL", "NULL", "NULL"};	
+	return aux2;
 }
 
 void desempilharTabelaDeSimbolos(){
