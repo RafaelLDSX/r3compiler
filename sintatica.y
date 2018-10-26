@@ -13,7 +13,7 @@ int yylex(void);
 void yyerror(string);
 %}
 
-%token TK_SOMA TK_SUBTRACAO TK_DIVISAO TK_MULTIPLICACAO TK_MENOR TK_MAIOR TK_MENORIGUAL TK_MAIORIGUAL TK_ATRIBUICAO TK_IGUAL TK_DIFERENTE
+%token TK_SOMA TK_SUBTRACAO TK_DIVISAO TK_MULTIPLICACAO TK_MENOR TK_MAIOR TK_MENORIGUAL TK_MAIORIGUAL TK_ATRIBUICAO TK_IGUAL TK_DIFERENTE TK_COMENTARIO
 %token TK_NUM TK_REAL TK_BOOL
 %token TK_MAIN TK_ID TK_TIPO
 %token TK_FIM TK_ERROR
@@ -171,12 +171,12 @@ E 			: E TK_SOMA E
 						break;
 				}
 			}
-			| '(' E ')'
-			{
-				$$.label = $2.label;
-				$$.tempLabel = $2.tempLabel;
-				$$.traducao =  $2.traducao;
-			}
+			// | '(' E ')'												//Isso não funciona
+			// {
+			// 	$$.label = $2.label;
+			// 	$$.tempLabel = $2.tempLabel;
+			// 	$$.traducao =  $2.traducao;
+			// }
 			| TK_NUM
 			{
 				$$.label = nameGen();
@@ -201,6 +201,16 @@ E 			: E TK_SOMA E
 				$$.tipo = "boolean";
 				$$.traducao = "";
 				declaracoes += "\t" + $$.tipo + " " + $$.label + " = " + $1.traducao + ";\n";
+			}
+			| '(' TK_TIPO ')' TK_ID
+			{
+				$$.traducao = "";
+				$$.label = nameGen();
+				$$.tempLabel = $$.label;
+				$$.tipo = $2.label;
+				$$.traducao = "";
+				declaracoes += "\t" + $$.tipo + " " + $$.label + " = " + $1.traducao + ";\n";
+				addMatrix($$);
 			}
 			// | TK_ID TK_ATRIBUICAO E
 			// {

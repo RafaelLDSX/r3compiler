@@ -44,6 +44,7 @@ ID {LETRA}({LETRA}|{NUM})*
 ">="		{yylval.label = yytext; return TK_MAIORIGUAL; }
 "=="		{yylval.label = yytext; return TK_IGUAL; }
 "!="		{yylval.label = yytext; return TK_DIFERENTE; }
+"@@"		{yylval.label = yytext; return TK_COMENTARIO; }
 
 {NUM}		{ yylval.traducao = yytext; return TK_NUM; }
 {REAL}		{ yylval.traducao = yytext; return TK_REAL; }
