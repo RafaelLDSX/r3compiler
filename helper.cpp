@@ -280,7 +280,6 @@ atributos procurarNoEscopo(string n){
 	int fim;
 	vector<atributos> aux;
 	for(fim = pilhaDeTabelaDeSimbolos.size() - 1; fim >= 0; fim--){
-		cout << "Tabela de simbolos de numero " << fim << "\n";
 		aux = pilhaDeTabelaDeSimbolos.at(fim);
 		for(int i = 0; i < aux.size(); i++){
 			if(aux[i].label == n){

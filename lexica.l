@@ -30,6 +30,8 @@ ID {LETRA}({LETRA}|{NUM})*
 
 "boolean"	{ yylval.label = "boolean"; return TK_TIPO; }
 
+"if"		{ return TK_IF; }
+
 
 [(){}[\];,]	{ return *yytext; }
 
@@ -51,6 +53,8 @@ ID {LETRA}({LETRA}|{NUM})*
 "true"		{ yylval.traducao = "1"; return TK_BOOL; }
 "false"		{ yylval.traducao = "0"; return TK_BOOL; }
 {ID}		{ yylval.label = yytext; return TK_ID; }
+
+
 
 .			{ *yytext; }
 

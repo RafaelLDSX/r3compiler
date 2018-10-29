@@ -13,6 +13,7 @@ int yylex(void);
 void yyerror(string);
 %}
 
+%token TK_IF
 %token TK_SOMA TK_SUBTRACAO TK_DIVISAO TK_MULTIPLICACAO TK_MENOR TK_MAIOR TK_MENORIGUAL TK_MAIORIGUAL TK_ATRIBUICAO TK_IGUAL TK_DIFERENTE TK_COMENTARIO
 %token TK_NUM TK_REAL TK_BOOL
 %token TK_MAIN TK_ID TK_TIPO
@@ -21,9 +22,10 @@ void yyerror(string);
 %start S
 
 %right TK_ATRIBUICAO
+%left TK_MENOR TK_MENORIGUAL TK_MAIOR TK_MAIORIGUAL TK_IGUAL TK_DIFERENTE
 %left TK_SOMA TK_SUBTRACAO
 %left TK_MULTIPLICACAO TK_DIVISAO
-%left TK_MENOR TK_MENORIGUAL TK_MAIOR TK_MAIORIGUAL TK_IGUAL TK_DIFERENTE
+
 
 %%
 
@@ -104,6 +106,13 @@ STMT		: TK_TIPO TK_ID
 					yyerror("id not declared\nLine: " + to_string(lineNumber) + "\n");
 				}
 			}
+			| TK_IF E ":" COMANDO
+			{
+				if($2.tipo != "boolean"){
+					yyerror("expression is not boolean");
+				}
+				$$.traducao = "if (" + $2.traducao + ")" + $3.traducao;
+			}
 
 E 			: E TK_SOMA E
 			{
@@ -171,12 +180,12 @@ E 			: E TK_SOMA E
 						break;
 				}
 			}
-			// | '(' E ')'												//Isso não funciona
-			// {
-			// 	$$.label = $2.label;
-			// 	$$.tempLabel = $2.tempLabel;
-			// 	$$.traducao =  $2.traducao;
-			// }
+			| '(' E ')'
+			{
+				$$.label = $2.label;
+				$$.tempLabel = $2.tempLabel;
+				$$.traducao =  $2.traducao;
+			}
 			| TK_NUM
 			{
 				$$.label = nameGen();
@@ -262,7 +271,6 @@ int main( int argc, char* argv[] )
 	criarTabelaDeSimbolos();
 	criarVetorOp();
 	criarVetorConversoes();
-	printVetorOp();
 	yyparse();
 
 	return 0;
