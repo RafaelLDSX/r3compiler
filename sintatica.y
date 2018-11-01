@@ -66,11 +66,23 @@ COMANDO 	: E ';'
 			{
 				$$.traducao = $1.traducao;
 			}
+			| CTRL
+			{
+				$$.traducao = $1.traducao;
+			}
 			| BLOCO
 			{
 				$$.traducao = $1.traducao;
 			}
 			;
+
+CTRL 		: TK_IF E COMANDO
+			{
+				if($2.tipo != "boolean"){
+					yyerror("expression is not boolean");
+				}
+				$$.traducao = $2.traducao + "\tif (" + $2.tempLabel + ")" + $3.traducao;
+			}
 
 STMT		: TK_TIPO TK_ID
 			{
@@ -105,13 +117,6 @@ STMT		: TK_TIPO TK_ID
 				else{
 					yyerror("id not declared\nLine: " + to_string(lineNumber) + "\n");
 				}
-			}
-			| TK_IF E ":" COMANDO
-			{
-				if($2.tipo != "boolean"){
-					yyerror("expression is not boolean");
-				}
-				$$.traducao = "if (" + $2.traducao + ")" + $3.traducao;
 			}
 
 E 			: E TK_SOMA E
