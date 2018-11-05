@@ -9,6 +9,12 @@
 
 using namespace std;
 
+struct labelStruct
+{
+	string start;
+	string end;
+};
+
 struct atributos
 {
 	string label;
@@ -39,8 +45,11 @@ static vector<OPERACOES> operacoes;
 static vector<Conversao> conversoes;
 static vector< vector<atributos> > pilhaDeTabelaDeSimbolos;
 static string declaracoes = "";
+static int labelCounter = 0;
+static vector<labelStruct> pilhaDeLabels;
 
 string nameGen();
+string labelNameGen();
 int searchMatrix(string id);
 bool isIdDeclared(string id);
 void addMatrix(atributos n);
@@ -66,7 +75,11 @@ atributos procurarNoEscopo(string n);
 string nameGen(){
 	counter++;
 	return "tmp" + to_string(counter);
+}
 
+string labelNameGen(){
+	labelCounter++;
+	return "label" + to_string(labelCounter);
 }
 
 int searchMatrix(string id){

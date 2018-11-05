@@ -78,10 +78,17 @@ COMANDO 	: E ';'
 
 CTRL 		: TK_IF E COMANDO
 			{
+				string ifBlock = labelNameGen();
+				string end = labelNameGen();
 				if($2.tipo != "boolean"){
 					yyerror("expression is not boolean");
 				}
-				$$.traducao = $2.traducao + "\tif (" + $2.tempLabel + ")" + $3.traducao;
+				$$.traducao = $2.traducao + "\tif ( " + $2.tempLabel + " )" 
+					+ "\n\t\tgoto " + ifBlock + ";"
+					+ "\n\tgoto " + end + ";"
+					+ "\n\t" + ifBlock + ":" 
+					+ "\n" + $3.traducao
+					+ "\t" + end + ":\n";
 			}
 
 STMT		: TK_TIPO TK_ID
