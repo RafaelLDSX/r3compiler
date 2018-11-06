@@ -32,6 +32,10 @@ ID {LETRA}({LETRA}|{NUM})*
 
 "if"		{ return TK_IF; }
 
+"while"		{ return TK_WHILE; }
+
+"for"		{ return TK_FOR; }
+
 
 [(){}[\];,]	{ return *yytext; }
 

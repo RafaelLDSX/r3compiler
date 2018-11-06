@@ -11,8 +11,8 @@ using namespace std;
 
 struct labelStruct
 {
-	string start;
-	string end;
+	string comeco;
+	string fim;
 };
 
 struct atributos
@@ -69,8 +69,10 @@ bool ehConversivel(string tipo, string candidato);
 int decidirConversao(string opA, string opB);
 void criarTabelaDeSimbolos();
 void desempilharTabelaDeSimbolos();
-void inserirNaTabelaDeSimbolos(atributos n);
+void empilharTabelaDeSimbolos(atributos n);
 atributos procurarNoEscopo(string n);
+void empilharLabelStruct(string comeco, string fim);
+void desempilharLabelStruct();
 
 string nameGen(){
 	counter++;
@@ -285,7 +287,7 @@ void criarTabelaDeSimbolos(){
 	pilhaDeTabelaDeSimbolos.push_back(table);
 }
 
-void inserirNaTabelaDeSimbolos(atributos n){
+void empilharTabelaDeSimbolos(atributos n){
 	pilhaDeTabelaDeSimbolos.back().push_back(n);
 }
 
@@ -306,4 +308,15 @@ atributos procurarNoEscopo(string n){
 
 void desempilharTabelaDeSimbolos(){
 	pilhaDeTabelaDeSimbolos.pop_back();
+}
+
+void empilharLabelStruct(string comeco, string fim){
+	labelStruct aux;
+	aux.comeco = comeco;
+	aux.fim = fim;
+	pilhaDeLabels.push_back(aux);
+}
+
+void desempilharLabelStruct(){
+	pilhaDeLabels.pop_back();
 }

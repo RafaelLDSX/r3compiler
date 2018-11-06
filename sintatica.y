@@ -13,7 +13,7 @@ int yylex(void);
 void yyerror(string);
 %}
 
-%token TK_IF
+%token TK_IF TK_WHILE TK_FOR
 %token TK_SOMA TK_SUBTRACAO TK_DIVISAO TK_MULTIPLICACAO TK_MENOR TK_MAIOR TK_MENORIGUAL TK_MAIORIGUAL TK_ATRIBUICAO TK_IGUAL TK_DIFERENTE TK_COMENTARIO
 %token TK_NUM TK_REAL TK_BOOL
 %token TK_MAIN TK_ID TK_TIPO
@@ -84,12 +84,27 @@ CTRL 		: TK_IF E COMANDO
 					yyerror("expression is not boolean");
 				}
 				$$.traducao = $2.traducao + "\tif ( " + $2.tempLabel + " )" 
-					+ "\n\t\tgoto " + ifBlock + ";"
-					+ "\n\tgoto " + end + ";"
-					+ "\n\t" + ifBlock + ":" 
-					+ "\n" + $3.traducao
-					+ "\t" + end + ":\n";
+							+ "\n\t\tgoto " + ifBlock + ";"
+							+ "\n\tgoto " + end + ";"
+							+ "\n\t" + ifBlock + ":" 
+							+ "\n" + $3.traducao
+							+ "\t" + end + ":\n";
 			}
+			| TK_WHILE E COMANDO
+			{
+				string comeco = labelNameGen();
+				string fim = labelNameGen();
+				empilharLabelStruct(comeco, fim);
+				$$.traducao = $2.traducao + "\tif ( ! (" + $2.tempLabel + ") )"
+							+ "\n\t\tgoto " + fim + ";"
+							+ "\n\t" + comeco + ":"
+							+ $3.traducao
+							+ $2.traducao + "\tif ( " + $2.tempLabel + " )"
+							+ "\n\t\tgoto " + comeco + ";"
+							+ "\n\t" + fim + ":\n"; 
+
+			}
+			;
 
 STMT		: TK_TIPO TK_ID
 			{
