@@ -39,6 +39,12 @@ EMPILHA		:
 				criarTabelaDeSimbolos();
 			}
 			;
+EMPILHALABELS :
+			{
+				$$.label = labelNameGen();
+				$$.tempLabel = labelNameGen();
+				empilharLabelStruct($$.label, $$.tempLabel);
+			}
 BLOCO		: EMPILHA '{' COMANDOS '}'
 			{
 				$$.traducao = $3.traducao;
@@ -90,18 +96,33 @@ CTRL 		: TK_IF E COMANDO
 							+ "\n" + $3.traducao
 							+ "\t" + end + ":\n";
 			}
-			| TK_WHILE E COMANDO
+			| EMPILHALABELS TK_WHILE E COMANDO
 			{
-				string comeco = labelNameGen();
-				string fim = labelNameGen();
-				empilharLabelStruct(comeco, fim);
-				$$.traducao = $2.traducao + "\tif ( ! (" + $2.tempLabel + ") )"
+				string comeco = $1.label;
+				string fim = $1.tempLabel;
+				$$.traducao = $3.traducao + "\tif ( ! (" + $3.tempLabel + ") )"
 							+ "\n\t\tgoto " + fim + ";"
 							+ "\n\t" + comeco + ":"
-							+ $3.traducao
-							+ $2.traducao + "\tif ( " + $2.tempLabel + " )"
+							+ $4.traducao
+							+ $3.traducao + "\tif ( " + $3.tempLabel + " )"
 							+ "\n\t\tgoto " + comeco + ";"
-							+ "\n\t" + fim + ":\n"; 
+							+ "\n\t" + fim + ":\n";
+				desempilharLabelStruct();
+			}
+			| EMPILHALABELS TK_FOR '('STMT';'E';'E')' COMANDO
+			{
+				string comeco = $1.label;
+				string fim = $1.tempLabel;
+				$$.traducao = $4.traducao + $6.traducao
+							+ "\tif ( ! (" + $6.tempLabel + ") )"
+							+ "\n\t\tgoto " + fim + ";"
+							+ "\n\t" + comeco + ":"
+						 	+ $10.traducao
+							+ $8.traducao 
+							+ $6.traducao + "\tif ( " + $6.tempLabel + " )"
+							+ "\n\t\tgoto " + comeco + ";"
+							+ "\n\t" + fim + ":\n";
+				desempilharLabelStruct();
 
 			}
 			;
@@ -248,29 +269,29 @@ E 			: E TK_SOMA E
 				declaracoes += "\t" + $$.tipo + " " + $$.label + " = " + $1.traducao + ";\n";
 				addMatrix($$);
 			}
-			// | TK_ID TK_ATRIBUICAO E
-			// {
-			// 	string preTraducao = $3.traducao;
-			// 	string atribuicao = "";
-			// 	if (isIdDeclared($1.label)){
-			// 		$1.tipo = getType($1.label);
-			// 		if ($1.tipo != $3.tipo){
-			// 			if (ehConversivel($1.tipo, $3.tipo)){
-			// 				string novoTemp = nameGen();
-			// 				preTraducao = preTraducao + "\t" + $3.tipo + " " + novoTemp + ";\n";
-			// 				changeTempName($1.label, novoTemp);
-			// 			}
-			// 			else{
-			// 				yyerror("id of type " + $1.tipo + " can not be of type " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
-			// 			}
-			// 		}
-			// 		$1.traducao = getTempName($1.label);
-			// 		$$.traducao = preTraducao + "\t" + $1.traducao + " = " + $3.label + ";\n";
-			// 	}
-			// 	else{
-			// 		yyerror("id not declared\nLine: " + to_string(lineNumber) + "\n");
-			// 	}
-			// }
+			| TK_ID TK_ATRIBUICAO E
+			{
+				string preTraducao = $3.traducao;
+				string atribuicao = "";
+				if (isIdDeclared($1.label)){
+					$1.tipo = getType($1.label);
+					if ($1.tipo != $3.tipo){
+						if (ehConversivel($1.tipo, $3.tipo)){
+							string novoTemp = nameGen();
+							preTraducao = preTraducao + "\t" + $3.tipo + " " + novoTemp + ";\n";
+							changeTempName($1.label, novoTemp);
+						}
+						else{
+							yyerror("id of type " + $1.tipo + " can not be of type " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+						}
+					}
+					$1.traducao = getTempName($1.label);
+					$$.traducao = preTraducao + "\t" + $1.traducao + " = " + $3.label + ";\n";
+				}
+				else{
+					yyerror("id not declared\nLine: " + to_string(lineNumber) + "\n");
+				}
+			}
 			| TK_ID
 			{
 				atributos aux = procurarNoEscopo($1.label);
