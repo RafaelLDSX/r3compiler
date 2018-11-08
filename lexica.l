@@ -36,6 +36,12 @@ ID {LETRA}({LETRA}|{NUM})*
 
 "for"		{ return TK_FOR; }
 
+"break"		{ return TK_BREAK; }
+
+"powerBreak" { return TK_POWERBREAK; }
+
+"continue" 	{ return TK_CONTINUE; }
+
 
 [(){}[\];,]	{ return *yytext; }
 

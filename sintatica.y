@@ -13,7 +13,7 @@ int yylex(void);
 void yyerror(string);
 %}
 
-%token TK_IF TK_WHILE TK_FOR
+%token TK_IF TK_WHILE TK_FOR TK_BREAK TK_POWERBREAK TK_CONTINUE TK_POWERCONTINUE
 %token TK_SOMA TK_SUBTRACAO TK_DIVISAO TK_MULTIPLICACAO TK_MENOR TK_MAIOR TK_MENORIGUAL TK_MAIORIGUAL TK_ATRIBUICAO TK_IGUAL TK_DIFERENTE TK_COMENTARIO
 %token TK_NUM TK_REAL TK_BOOL
 %token TK_MAIN TK_ID TK_TIPO
@@ -45,6 +45,7 @@ EMPILHALABELS :
 				$$.tempLabel = labelNameGen();
 				empilharLabelStruct($$.label, $$.tempLabel);
 			}
+			;
 BLOCO		: EMPILHA '{' COMANDOS '}'
 			{
 				$$.traducao = $3.traducao;
@@ -113,17 +114,47 @@ CTRL 		: TK_IF E COMANDO
 			{
 				string comeco = $1.label;
 				string fim = $1.tempLabel;
+				cout << pilhaDeLabels.back().fim + "\n";
 				$$.traducao = $4.traducao + $6.traducao
 							+ "\tif ( ! (" + $6.tempLabel + ") )"
 							+ "\n\t\tgoto " + fim + ";"
-							+ "\n\t" + comeco + ":"
+							+ "\n\t" + comeco + ":\n"
 						 	+ $10.traducao
 							+ $8.traducao 
 							+ $6.traducao + "\tif ( " + $6.tempLabel + " )"
 							+ "\n\t\tgoto " + comeco + ";"
 							+ "\n\t" + fim + ":\n";
 				desempilharLabelStruct();
+				cout << "DESEMPILHADO\n";
 
+			}
+			| TK_BREAK ';'
+			{
+				if(pilhaDeLabels.size() < 1){
+					yyerror("no loop to break out of\nLine: " + to_string(lineNumber) + "\n");
+				}
+				$$.traducao = "\tgoto " + pilhaDeLabels.back().fim + ";\n";
+			}
+			| TK_CONTINUE ';'
+			{
+				if(pilhaDeLabels.size() < 1){
+					yyerror("no loop to continue\nLine: " + to_string(lineNumber) + "\n");
+				}
+				$$.traducao = "\tgoto " + pilhaDeLabels.back().comeco + ";\n";
+			}
+			| TK_POWERBREAK ';'
+			{
+				if(pilhaDeLabels.size() < 1){
+					yyerror("no loop to powerbreak out of\nLine: " + to_string(lineNumber) + "\n");
+				}
+				$$.traducao = "\tgoto " + pilhaDeLabels.at(0).fim + ";\n";
+			}
+			| TK_POWERCONTINUE ';'
+			{
+				if(pilhaDeLabels.size() < 1){
+					yyerror("no loop to powercontinue\nLine: " + to_string(lineNumber) + "\n");
+				}
+				$$.traducao = "\tgoto " + pilhaDeLabels.at(0).comeco + ";\n";
 			}
 			;
 
