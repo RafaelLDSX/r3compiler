@@ -101,12 +101,11 @@ CTRL 		: TK_IF E COMANDO
 			{
 				string comeco = $1.label;
 				string fim = $1.tempLabel;
-				$$.traducao = $3.traducao + "\tif ( ! (" + $3.tempLabel + ") )"
-							+ "\n\t\tgoto " + fim + ";"
-							+ "\n\t" + comeco + ":"
+				$$.traducao = "\t" + comeco + ":\n"
+							+ $3.traducao + "\tif ( ! (" + $3.tempLabel + ") )"
+							+ "\n\t\tgoto " + fim + ";\n"
 							+ $4.traducao
-							+ $3.traducao + "\tif ( " + $3.tempLabel + " )"
-							+ "\n\t\tgoto " + comeco + ";"
+							+ "\tgoto " + comeco + ";"
 							+ "\n\t" + fim + ":\n";
 				desempilharLabelStruct();
 			}
@@ -115,14 +114,14 @@ CTRL 		: TK_IF E COMANDO
 				string comeco = $1.label;
 				string fim = $1.tempLabel;
 				cout << pilhaDeLabels.back().fim + "\n";
-				$$.traducao = $4.traducao + $6.traducao
+				$$.traducao = $4.traducao 
+							+ "\t" + comeco + ";\n"
+							+ $6.traducao
 							+ "\tif ( ! (" + $6.tempLabel + ") )"
-							+ "\n\t\tgoto " + fim + ";"
-							+ "\n\t" + comeco + ":\n"
+							+ "\n\t\tgoto " + fim + ";\n"
 						 	+ $10.traducao
-							+ $8.traducao 
-							+ $6.traducao + "\tif ( " + $6.tempLabel + " )"
-							+ "\n\t\tgoto " + comeco + ";"
+							+ $8.traducao
+							+ "\tgoto " + comeco + ";" 
 							+ "\n\t" + fim + ":\n";
 				desempilharLabelStruct();
 				cout << "DESEMPILHADO\n";
