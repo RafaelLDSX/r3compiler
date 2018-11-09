@@ -33,6 +33,10 @@ S 			: TK_TIPO TK_MAIN '(' ')' BLOCO
 			{
 				cout << "/*R3 Compiler*/\n" << "#include <iostream>\n#include<string.h>\n#include<stdio.h>\nint main(void)\n{\n" << "\t//declaracoes\n" << declaracoes << "\n" << $5.traducao << "\treturn 0;\n}" << endl; 
 			}
+			| COMANDO S
+			{
+				$$.traducao = $1.traducao + $2.traducao;
+			}
 			;
 EMPILHA		:
 			{
@@ -65,7 +69,7 @@ COMANDOS	: COMANDO COMANDOS
 			}
 			;
 
-COMANDO 	: E ';'
+COMANDO		: E ';'
 			{
 				$$.traducao = $1.traducao;
 			}
@@ -159,7 +163,7 @@ CTRL 		: TK_IF E COMANDO
 
 STMT		: TK_TIPO TK_ID
 			{
-				if (isIdDeclared($2.label)){
+				if (isIdDeclared($2.label, 0)){
 					yyerror("id already declared\nLine: " + to_string(lineNumber) + "\n");
 				}
 				$2.tempLabel = nameGen();
@@ -172,7 +176,7 @@ STMT		: TK_TIPO TK_ID
 			{
 				string preTraducao = $3.traducao;
 				string atribuicao = "";
-				if (isIdDeclared($1.label)){
+				if (isIdDeclared($1.label, 1)){
 					$1.tipo = getType($1.label);
 					if ($1.tipo != $3.tipo){
 						if (ehConversivel($1.tipo, $3.tipo)){
@@ -269,8 +273,8 @@ E 			: E TK_SOMA E
 				$$.label = nameGen();
 				$$.tempLabel = $$.label;
 				$$.tipo = "int";
-				$$.traducao = "";
-				declaracoes += "\t" + getRealTipo($$) + " " + $$.label + " = " + $1.traducao + ";\n";
+				$$.traducao = "\t" + $$.label + " = " + $1.traducao + ";\n";
+				declaracoes += "\t" + getRealTipo($$) + " " + $$.label + ";\n";
 				
 			}
 			| TK_REAL
@@ -278,16 +282,16 @@ E 			: E TK_SOMA E
 				$$.label = nameGen();
 				$$.tempLabel = $$.label;
 				$$.tipo = "float";
-				$$.traducao = "";
-				declaracoes += "\t" + getRealTipo($$) + " " + $$.label + " = " + $1.traducao + ";\n";
+				$$.traducao = "\t" + $$.label + " = " + $1.traducao + ";\n";
+				declaracoes += "\t" + getRealTipo($$) + " " + $$.label + ";\n";
 			}
 			| TK_CHAR
 			{
 				$$.label = nameGen();
 				$$.tempLabel = $$.label;
 				$$.tipo = "char";
-				$$.traducao = "";
-				declaracoes += "\t" + getRealTipo($$) + " " + $$.label + " = " + $1.traducao + ";\n";
+				$$.traducao = "\t" + $$.label + " = " + $1.traducao + ";\n";
+				declaracoes += "\t" + getRealTipo($$) + " " + $$.label + ";\n";
 			}
 			| TK_STRING
 			{
@@ -295,16 +299,16 @@ E 			: E TK_SOMA E
 				$$.tempLabel = $$.label;
 				$$.tipo = "string";
 				$$.tamanhoDaString = $1.tamanhoDaString;
-				$$.traducao = "";
-				declaracoes += "\t" + getRealTipo($$) + " " + $$.label + " = " + $1.traducao + ";\n";
+				$$.traducao = "\t" + $$.label + " = " + $1.traducao + ";\n";
+				declaracoes += "\t" + getRealTipo($$) + " " + $$.label + ";\n";
 			}
 			| TK_BOOL
 			{
 				$$.label = nameGen();
 				$$.tempLabel = $$.label;
 				$$.tipo = "boolean";
-				$$.traducao = "";
-				declaracoes += "\t" + getRealTipo($$) + " " + $$.label + " = " + $1.traducao + ";\n";
+				$$.traducao = "\t" + $$.label + " = " + $1.traducao + ";\n";
+				declaracoes += "\t" + getRealTipo($$) + " " + $$.label + ";\n";
 			}
 			| '(' TK_TIPO ')' TK_ID
 			{
@@ -320,7 +324,7 @@ E 			: E TK_SOMA E
 			{
 				string preTraducao = $3.traducao;
 				string atribuicao = "";
-				if (isIdDeclared($1.label)){
+				if (isIdDeclared($1.label, 1)){
 					$1.tipo = getType($1.label);
 					if ($1.tipo != $3.tipo){
 						if (ehConversivel($1.tipo, $3.tipo)){
@@ -341,7 +345,7 @@ E 			: E TK_SOMA E
 			}
 			| TK_ID
 			{
-				atributos aux = procurarNoEscopo($1.label);
+				atributos aux = procurarNoEscopo($1.label, 1);
 				if(aux.label !=  "NULL"){
 					// $$.label = matriz[1][aux];
 					// $$.tipo = matriz[2][aux];

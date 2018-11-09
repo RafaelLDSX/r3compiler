@@ -46,13 +46,14 @@ static vector<OPERACOES> operacoes;
 static vector<Conversao> conversoes;
 static vector< vector<atributos> > pilhaDeTabelaDeSimbolos;
 static string declaracoes = "";
+static string atribucoes = "";
 static int labelCounter = 0;
 static vector<labelStruct> pilhaDeLabels;
 
 string nameGen();
 string labelNameGen();
 int searchMatrix(string id);
-bool isIdDeclared(string id);
+bool isIdDeclared(string id, int flag);
 void addMatrix(atributos n);
 int ajeitarExpressao(atributos &resultado, atributos op1, string operador, atributos op2);
 bool precisaDeConversao(string opA, string opB);
@@ -71,7 +72,7 @@ int decidirConversao(string opA, string opB);
 void criarTabelaDeSimbolos();
 void desempilharTabelaDeSimbolos();
 void empilharTabelaDeSimbolos(atributos n);
-atributos procurarNoEscopo(string n);
+atributos procurarNoEscopo(string n, int flag);
 void empilharLabelStruct(string comeco, string fim);
 void desempilharLabelStruct();
 int contarString(string a);
@@ -97,12 +98,12 @@ int searchMatrix(string id){
 	return -1;
 }
 
-bool isIdDeclared(string id){
+bool isIdDeclared(string id, int flag){
 	// if (searchMatrix(id) != -1){
 	// 	return true;
 	// }
 	// return false;
-	atributos aux = procurarNoEscopo(id);
+	atributos aux = procurarNoEscopo(id, flag);
 	if (aux.label ==  "NULL"){
 		return false;
 	}
@@ -177,12 +178,12 @@ int getIdIndex(string id){
 }
 
 string getType(string id){
-	atributos aux = procurarNoEscopo(id);
+	atributos aux = procurarNoEscopo(id, 1);
 	return aux.tipo;
 }
 
 string getTempName(string id){
-	atributos aux = procurarNoEscopo(id);
+	atributos aux = procurarNoEscopo(id, 1);
 	return aux.tempLabel;
 }
 
@@ -294,11 +295,21 @@ void empilharTabelaDeSimbolos(atributos n){
 	pilhaDeTabelaDeSimbolos.back().push_back(n);
 }
 
-atributos procurarNoEscopo(string n){
+atributos procurarNoEscopo(string n, int flag){
 	int fim;
 	vector<atributos> aux;
-	for(fim = pilhaDeTabelaDeSimbolos.size() - 1; fim >= 0; fim--){
-		aux = pilhaDeTabelaDeSimbolos.at(fim);
+	if(flag){
+		for(fim = pilhaDeTabelaDeSimbolos.size() - 1; fim >= 0; fim--){
+			aux = pilhaDeTabelaDeSimbolos.at(fim);
+			for(int i = 0; i < aux.size(); i++){
+				if(aux[i].label == n){
+					return aux.at(i);
+				}
+			}
+		}
+	}
+	else{
+		aux = pilhaDeTabelaDeSimbolos.back();
 		for(int i = 0; i < aux.size(); i++){
 			if(aux[i].label == n){
 				return aux.at(i);
@@ -337,7 +348,12 @@ string getRealTipo(atributos a){
 		return "int";
 	}
 	if(a.tipo == "string"){
-		return "char[" + to_string(a.tamanhoDaString) + "]";
+		if(a.tamanhoDaString == 0){
+			return "char*";
+		}
+		else{
+			return "char[" + to_string(a.tamanhoDaString) + "]";
+		}
 	}
 	else{
 		return a.tipo;
