@@ -21,6 +21,7 @@ struct atributos
 	string tempLabel;
 	string traducao;
 	string tipo;
+	int tamanhoDaString;
 };
 
 typedef struct ops
@@ -73,6 +74,8 @@ void empilharTabelaDeSimbolos(atributos n);
 atributos procurarNoEscopo(string n);
 void empilharLabelStruct(string comeco, string fim);
 void desempilharLabelStruct();
+int contarString(string a);
+string getRealTipo(atributos a);
 
 string nameGen(){
 	counter++;
@@ -319,4 +322,24 @@ void empilharLabelStruct(string comeco, string fim){
 
 void desempilharLabelStruct(){
 	pilhaDeLabels.pop_back();
+}
+
+int contarString(string a){
+	int contador = 0;
+	for(string::iterator i = a.begin(); i != a.end(); i++){
+		contador++;
+	};
+	return contador - 1;	//subtraindo aspas e somando EOF
+}
+
+string getRealTipo(atributos a){
+	if(a.tipo == "boolean"){
+		return "int";
+	}
+	if(a.tipo == "string"){
+		return "char[" + to_string(a.tamanhoDaString) + "]";
+	}
+	else{
+		return a.tipo;
+	}
 }

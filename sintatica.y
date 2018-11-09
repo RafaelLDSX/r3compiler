@@ -15,7 +15,7 @@ void yyerror(string);
 
 %token TK_IF TK_WHILE TK_FOR TK_BREAK TK_POWERBREAK TK_CONTINUE TK_POWERCONTINUE
 %token TK_SOMA TK_SUBTRACAO TK_DIVISAO TK_MULTIPLICACAO TK_MENOR TK_MAIOR TK_MENORIGUAL TK_MAIORIGUAL TK_ATRIBUICAO TK_IGUAL TK_DIFERENTE TK_COMENTARIO
-%token TK_NUM TK_REAL TK_BOOL
+%token TK_NUM TK_REAL TK_BOOL TK_CHAR TK_STRING
 %token TK_MAIN TK_ID TK_TIPO
 %token TK_FIM TK_ERROR
 
@@ -166,7 +166,7 @@ STMT		: TK_TIPO TK_ID
 				$2.tipo = $1.label;
 				addMatrix($2);
 				$$.traducao = "";
-				declaracoes += "\t" + $1.label + " " + $2.tempLabel + ";\n";
+				declaracoes += "\t" + getRealTipo($2) + " " + $2.tempLabel + ";\n";
 			}
 			| TK_ID TK_ATRIBUICAO E
 			{
@@ -270,7 +270,7 @@ E 			: E TK_SOMA E
 				$$.tempLabel = $$.label;
 				$$.tipo = "int";
 				$$.traducao = "";
-				declaracoes += "\t" + $$.tipo + " " + $$.label + " = " + $1.traducao + ";\n";
+				declaracoes += "\t" + getRealTipo($$) + " " + $$.label + " = " + $1.traducao + ";\n";
 				
 			}
 			| TK_REAL
@@ -279,7 +279,24 @@ E 			: E TK_SOMA E
 				$$.tempLabel = $$.label;
 				$$.tipo = "float";
 				$$.traducao = "";
-				declaracoes += "\t" + $$.tipo + " " + $$.label + " = " + $1.traducao + ";\n";
+				declaracoes += "\t" + getRealTipo($$) + " " + $$.label + " = " + $1.traducao + ";\n";
+			}
+			| TK_CHAR
+			{
+				$$.label = nameGen();
+				$$.tempLabel = $$.label;
+				$$.tipo = "char";
+				$$.traducao = "";
+				declaracoes += "\t" + getRealTipo($$) + " " + $$.label + " = " + $1.traducao + ";\n";
+			}
+			| TK_STRING
+			{
+				$$.label = nameGen();
+				$$.tempLabel = $$.label;
+				$$.tipo = "string";
+				$$.tamanhoDaString = $1.tamanhoDaString;
+				$$.traducao = "";
+				declaracoes += "\t" + getRealTipo($$) + " " + $$.label + " = " + $1.traducao + ";\n";
 			}
 			| TK_BOOL
 			{
@@ -287,7 +304,7 @@ E 			: E TK_SOMA E
 				$$.tempLabel = $$.label;
 				$$.tipo = "boolean";
 				$$.traducao = "";
-				declaracoes += "\t" + $$.tipo + " " + $$.label + " = " + $1.traducao + ";\n";
+				declaracoes += "\t" + getRealTipo($$) + " " + $$.label + " = " + $1.traducao + ";\n";
 			}
 			| '(' TK_TIPO ')' TK_ID
 			{

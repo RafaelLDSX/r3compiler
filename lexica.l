@@ -12,6 +12,7 @@ NUM {DIGITO}+
 REAL {NUM}+("."{NUM}+)?
 CHAR \'({LETRA}|{NUM})\'
 ID {LETRA}({LETRA}|{NUM})*
+STRING \"({LETRA}|{NUM}|{ESPACO})+\"
 
 %option noyywrap
 %%
@@ -30,6 +31,8 @@ ID {LETRA}({LETRA}|{NUM})*
 
 "boolean"	{ yylval.label = "boolean"; return TK_TIPO; }
 
+"string"	{ yylval.label = "string"; return TK_TIPO; }
+
 "if"		{ return TK_IF; }
 
 "while"		{ return TK_WHILE; }
@@ -41,6 +44,8 @@ ID {LETRA}({LETRA}|{NUM})*
 "powerBreak" { return TK_POWERBREAK; }
 
 "continue" 	{ return TK_CONTINUE; }
+
+"powerContinue" { return TK_POWERCONTINUE; }
 
 
 [(){}[\];,]	{ return *yytext; }
@@ -60,9 +65,11 @@ ID {LETRA}({LETRA}|{NUM})*
 
 {NUM}		{ yylval.traducao = yytext; return TK_NUM; }
 {REAL}		{ yylval.traducao = yytext; return TK_REAL; }
+{CHAR}		{ yylval.traducao = yytext; return TK_CHAR; }
 "true"		{ yylval.traducao = "1"; return TK_BOOL; }
 "false"		{ yylval.traducao = "0"; return TK_BOOL; }
 {ID}		{ yylval.label = yytext; return TK_ID; }
+{STRING}	{ yylval.traducao = yytext; yylval.tamanhoDaString = contarString(yylval.traducao); return TK_STRING; }
 
 
 
