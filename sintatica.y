@@ -31,7 +31,10 @@ void yyerror(string);
 
 S 			: TK_TIPO TK_MAIN '(' ')' BLOCO
 			{
-				cout << "/*R3 Compiler*/\n" << "#include <iostream>\n#include<string.h>\n#include<stdio.h>\nint main(void)\n{\n" << "\t//declaracoes\n" << declaracoes << "\n" << $5.traducao << "\treturn 0;\n}" << endl; 
+				if(errorFlag != 1)
+					cout << "/*R3 Compiler*/\n" << "#include <iostream>\n#include<string.h>\n#include<stdio.h>\nint main(void)\n{\n" << "\t//declaracoes\n" << declaracoes << "\n" << $5.traducao << "\treturn 0;\n}" << endl;
+				else
+					cout << "Erros encontrados: " + to_string(errorCounter) + "\n" + errorString;
 			}
 			| COMANDO S
 			{
@@ -92,7 +95,9 @@ CTRL 		: TK_IF E COMANDO
 				string ifBlock = labelNameGen();
 				string end = labelNameGen();
 				if($2.tipo != "boolean"){
-					yyerror("expression is not boolean");
+					errorFlag = 1;
+					errorString += "expression is not boolean";
+					//yyerror("expression is not boolean");
 				}
 				$$.traducao = $2.traducao + "\tif ( " + $2.tempLabel + " )" 
 							+ "\n\t\tgoto " + ifBlock + ";"
@@ -134,28 +139,36 @@ CTRL 		: TK_IF E COMANDO
 			| TK_BREAK ';'
 			{
 				if(pilhaDeLabels.size() < 1){
-					yyerror("no loop to break out of\nLine: " + to_string(lineNumber) + "\n");
+					errorFlag = 1;
+					errorString += "no loop to break out of\nLine: " + to_string(lineNumber) + "\n";
+					//yyerror("no loop to break out of\nLine: " + to_string(lineNumber) + "\n");
 				}
 				$$.traducao = "\tgoto " + pilhaDeLabels.back().fim + ";\n";
 			}
 			| TK_CONTINUE ';'
 			{
 				if(pilhaDeLabels.size() < 1){
-					yyerror("no loop to continue\nLine: " + to_string(lineNumber) + "\n");
+					errorFlag = 1;
+					errorString += "no loop to continue\nLine: " + to_string(lineNumber) + "\n";
+					//yyerror("no loop to continue\nLine: " + to_string(lineNumber) + "\n");
 				}
 				$$.traducao = "\tgoto " + pilhaDeLabels.back().comeco + ";\n";
 			}
 			| TK_POWERBREAK ';'
 			{
 				if(pilhaDeLabels.size() < 1){
-					yyerror("no loop to powerbreak out of\nLine: " + to_string(lineNumber) + "\n");
+					errorFlag = 1;
+					errorString += "no loop to powerbreak out of\nLine: " + to_string(lineNumber) + "\n";
+					//yyerror("no loop to powerbreak out of\nLine: " + to_string(lineNumber) + "\n");
 				}
 				$$.traducao = "\tgoto " + pilhaDeLabels.at(0).fim + ";\n";
 			}
 			| TK_POWERCONTINUE ';'
 			{
 				if(pilhaDeLabels.size() < 1){
-					yyerror("no loop to powercontinue\nLine: " + to_string(lineNumber) + "\n");
+					errorFlag = 1;
+					errorString += "no loop to powercontinue\nLine: " + to_string(lineNumber) + "\n";
+					//yyerror("no loop to powercontinue\nLine: " + to_string(lineNumber) + "\n");
 				}
 				$$.traducao = "\tgoto " + pilhaDeLabels.at(0).comeco + ";\n";
 			}
@@ -164,7 +177,9 @@ CTRL 		: TK_IF E COMANDO
 STMT		: TK_TIPO TK_ID
 			{
 				if (isIdDeclared($2.label, 0)){
-					yyerror("id already declared\nLine: " + to_string(lineNumber) + "\n");
+					errorFlag = 1;
+					errorString += "id already declared\nLine: " + to_string(lineNumber) + "\n";
+					//yyerror("id already declared\nLine: " + to_string(lineNumber) + "\n");
 				}
 				$2.tempLabel = nameGen();
 				$2.tipo = $1.label;
@@ -185,14 +200,18 @@ STMT		: TK_TIPO TK_ID
 							changeTempName($1.label, novoTemp);
 						}
 						else{
-							yyerror("id of type " + $1.tipo + " can not be of type " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+							errorFlag = 1;
+							errorString += "id of type " + $1.tipo + " can not be of type " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n";
+							//yyerror("id of type " + $1.tipo + " can not be of type " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
 						}
 					}
 					$1.traducao = getTempName($1.label);
 					$$.traducao = preTraducao + "\t" + $1.traducao + " = " + $3.label + ";\n";
 				}
 				else{
-					yyerror("id not declared\nLine: " + to_string(lineNumber) + "\n");
+					errorFlag = 1;
+					errorString += "id not declared\nLine: " + to_string(lineNumber) + "\n";
+					//yyerror("id not declared\nLine: " + to_string(lineNumber) + "\n");
 				}
 			}
 
@@ -200,9 +219,15 @@ E 			: E TK_SOMA E
 			{
 				switch(ajeitarExpressao($$, $1, $2.label, $3)){
 					case -1:
-						yyerror("no operation of type '+' defined for types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+						errorFlag = 1;
+						errorString += "no operation of type '+' defined for types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n";
+						break;
+						//yyerror("no operation of type '+' defined for types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
 					case -2:
-						yyerror("cannot convert types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+						errorFlag = 1;
+						errorString += "cannot convert types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n";
+						break;
+						//yyerror("cannot convert types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
 					case 1:
 						break;
 				}
@@ -211,9 +236,15 @@ E 			: E TK_SOMA E
 			{
 				switch(ajeitarExpressao($$, $1, $2.label, $3)){
 					case -1:
-						yyerror("no operation of type '-' defined for types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+						errorFlag = 1;
+						errorString += "no operation of type '-' defined for types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n";
+						break;
+						//yyerror("no operation of type '+' defined for types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
 					case -2:
-						yyerror("cannot convert types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+						errorFlag = 1;
+						errorString += "cannot convert types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n";
+						break;
+						//yyerror("cannot convert types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
 					case 1:
 						break;
 				}
@@ -222,9 +253,15 @@ E 			: E TK_SOMA E
 			{
 				switch(ajeitarExpressao($$, $1, $2.label, $3)){
 					case -1:
-						yyerror("no operation of type '/' defined for types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+						errorFlag = 1;
+						errorString += "no operation of type '/' defined for types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n";
+						break;
+						//yyerror("no operation of type '+' defined for types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
 					case -2:
-						yyerror("cannot convert types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+						errorFlag = 1;
+						errorString += "cannot convert types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n";
+						break;
+						//yyerror("cannot convert types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
 					case 1:
 						break;
 				}
@@ -233,9 +270,15 @@ E 			: E TK_SOMA E
 			{
 				switch(ajeitarExpressao($$, $1, $2.label, $3)){
 					case -1:
-						yyerror("no operation of type '*' defined for types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+						errorFlag = 1;
+						errorString += "no operation of type '*' defined for types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n";
+						break;
+						//yyerror("no operation of type '+' defined for types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
 					case -2:
-						yyerror("cannot convert types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+						errorFlag = 1;
+						errorString += "cannot convert types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n";
+						break;
+						//yyerror("cannot convert types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
 					case 1:
 						break;
 				}
@@ -244,9 +287,15 @@ E 			: E TK_SOMA E
 			{
 				switch(ajeitarExpressao($$, $1, $2.label, $3)){
 					case -1:
-						yyerror("no operation of type '<' defined for types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+						errorFlag = 1;
+						errorString += "no operation of type '<' defined for types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n";
+						break;
+						//yyerror("no operation of type '+' defined for types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
 					case -2:
-						yyerror("cannot convert types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+						errorFlag = 1;
+						errorString += "cannot convert types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n";
+						break;
+						//yyerror("cannot convert types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
 					case 1:
 						break;
 				}
@@ -255,9 +304,15 @@ E 			: E TK_SOMA E
 			{
 				switch(ajeitarExpressao($$, $1, $2.label, $3)){
 					case -1:
-						yyerror("no operation of type '>' defined for types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+						errorFlag = 1;
+						errorString += "no operation of type '>' defined for types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n";
+						break;
+						//yyerror("no operation of type '+' defined for types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
 					case -2:
-						yyerror("cannot convert types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+						errorFlag = 1;
+						errorString += "cannot convert types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n";
+						break;
+						//yyerror("cannot convert types " + $1.tipo + " and " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
 					case 1:
 						break;
 				}
@@ -333,14 +388,18 @@ E 			: E TK_SOMA E
 							changeTempName($1.label, novoTemp);
 						}
 						else{
-							yyerror("id of type " + $1.tipo + " can not be of type " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+							errorFlag = 1;
+							errorString += "id of type " + $1.tipo + " can not be of type " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n";
+							//yyerror("id of type " + $1.tipo + " can not be of type " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
 						}
 					}
 					$1.traducao = getTempName($1.label);
 					$$.traducao = preTraducao + "\t" + $1.traducao + " = " + $3.label + ";\n";
 				}
 				else{
-					yyerror("id not declared\nLine: " + to_string(lineNumber) + "\n");
+					errorFlag = 1;
+					errorString += "id not declared\nLine: " + to_string(lineNumber) + "\n";
+					// yyerror("id not declared\nLine: " + to_string(lineNumber) + "\n");
 				}
 			}
 			| TK_ID
@@ -354,7 +413,9 @@ E 			: E TK_SOMA E
 					$$.label = $$.tempLabel;							//gambiarra
 				}
 				else{
-					yyerror("id not declared\nLine: " + to_string(lineNumber) + "\n");
+					errorFlag = 1;
+					errorString += "id not declared\nLine: " + to_string(lineNumber) + "\n";
+					//yyerror("id not declared\nLine: " + to_string(lineNumber) + "\n");
 				}
 			} 
 			;

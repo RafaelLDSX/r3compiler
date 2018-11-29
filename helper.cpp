@@ -49,6 +49,9 @@ static string declaracoes = "";
 static string atribucoes = "";
 static int labelCounter = 0;
 static vector<labelStruct> pilhaDeLabels;
+static int errorCounter = 0;
+static int errorFlag = 0;
+static string errorString = "";
 
 string nameGen();
 string labelNameGen();
