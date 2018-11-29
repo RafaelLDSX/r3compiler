@@ -2,11 +2,51 @@
 
 ## Features
 
-1. Operações aritméticas básicas e relacionais
-2. Tipos int, float e boolean
-3. Declaração e atribuição de variáveis
-4. Verificação de tipo para as operações
-5. Coerções
+- [X] * Declaração Explícita
+- [X] Escopo Estático
+- [X] Blocos
+- [X] Escopo Global
+- [X] Tipos de dados primitivos
+- [X] Inicialização de Variáveis
+- [ ] Concatenação de String
+- [ ] Matrizes
+- [ ] Inicialização de Matrizes
+- [X] Expressões
+- [X] Expressões Condicionais
+- [ ] Comandos de Entrada e Saída
+- [X] Comandos de Laço (for, while e do/while)
+- [X] Comandos de Decisão (if, if/else e switch)
+- [X] Operadores Aritméticos
+- [X] Operadores Relacionais (gerando boolean)
+- [X] Operadores Lógicos (gerando boolean)
+- [X] Operadores Compostos
+- [ ] Operadores Unários
+- [X] Conversão de Tipos
+- [X] Mecanismos de Controle de Laços
+- [X] * Detecção de Erros
+- [ ] Subprograma (Função)
+
+### Extras:
+
+- [ ] Escopo dinâmico
+- [ ] Subprograma (Procedimento)
+- [ ] Ponteiros
+- [ ] Referências
+- [ ] Declaração Implícita
+- [ ] Vinculação Dinâmica de Tipos
+- [ ] Inferência de Tipos
+- [ ] Nova operações (exponenciação, ...)
+- [ ] Enumeração
+- [ ] Subfaixa
+- [ ] Matrizes Regulares
+- [ ] Fatias
+- [ ] Matrizes Associativas
+- [ ] Uniões
+- [ ] Foreach
+- [ ] Controle de Laços (break all)
+- [ ] Comandos Protegidos
+- [ ] Procedimentos
+- [ ] Passagens de Parâmetros utilizando nomes
 
 ## Como usar
 
