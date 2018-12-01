@@ -60,7 +60,7 @@ bool isIdDeclared(string id, int flag);
 void addMatrix(atributos n);
 int ajeitarExpressao(atributos &resultado, atributos op1, string operador, atributos op2);
 bool precisaDeConversao(string opA, string opB);
-int getIdIndex(string id);
+vector<int> getIdIndex(string id);
 string getType(string s);
 string getTempName(string s);
 void changeTempName(string tipo);
@@ -80,6 +80,10 @@ void empilharLabelStruct(string comeco, string fim);
 void desempilharLabelStruct();
 int contarString(string a);
 string getRealTipo(atributos a);
+void alterarTamanhoDaString(string id, int tamanho);
+
+//salva mensagem de erro para ser exibida
+void flagError(string msg);
 
 string nameGen(){
 	counter++;
@@ -114,10 +118,6 @@ bool isIdDeclared(string id, int flag){
 }
 
 void addMatrix(atributos n){
-	// matriz[0][contadorMatriz] = n.label;
-	// matriz[1][contadorMatriz] = n.traducao;
-	// matriz[2][contadorMatriz] = n.tipo;
-	// contadorMatriz++;
 	pilhaDeTabelaDeSimbolos.back().push_back(n);
 }
 
@@ -171,13 +171,21 @@ int ajeitarExpressao(atributos &resultado, atributos op1, string operador, atrib
 	return 1;
 }
 
-int getIdIndex(string id){
-	int aux;
-	for (aux = 0; matriz[0][aux] != id && aux < contadorMatriz; aux++){}
-	if (aux < contadorMatriz){
-		return aux;
+vector<int> getIdIndex(string id){
+	vector<atributos> aux;
+	vector<int> retorno;
+	int fim;
+	for(fim = pilhaDeTabelaDeSimbolos.size() - 1; fim >= 0; fim--){
+		aux = pilhaDeTabelaDeSimbolos.at(fim);
+		for(int i = 0; i < aux.size(); i++){
+			if(aux[i].label == id){
+				retorno.push_back(i);
+				retorno.push_back(fim);
+				return retorno;
+			}
+		}
 	}
-	return -1;
+	return retorno;
 }
 
 string getType(string id){
@@ -190,9 +198,9 @@ string getTempName(string id){
 	return aux.tempLabel;
 }
 
-void changeTempName(string id, string tipo){
-	int aux = getIdIndex(id);
-	matriz[1][aux] = tipo;
+void changeTempName(string id, string novoTemp){
+	vector<int> aux = getIdIndex(id);
+	pilhaDeTabelaDeSimbolos.at(aux.at(1)).at(aux.at(0)).tempLabel = novoTemp;
 
 }
 
@@ -301,6 +309,7 @@ void empilharTabelaDeSimbolos(atributos n){
 atributos procurarNoEscopo(string n, int flag){
 	int fim;
 	vector<atributos> aux;
+	//se flag = 1, procura em todas as tabelas de simbolos
 	if(flag){
 		for(fim = pilhaDeTabelaDeSimbolos.size() - 1; fim >= 0; fim--){
 			aux = pilhaDeTabelaDeSimbolos.at(fim);
@@ -311,6 +320,7 @@ atributos procurarNoEscopo(string n, int flag){
 			}
 		}
 	}
+	//se nao, procura somente na atual (caso de declaração de variavel)
 	else{
 		aux = pilhaDeTabelaDeSimbolos.back();
 		for(int i = 0; i < aux.size(); i++){
@@ -351,14 +361,20 @@ string getRealTipo(atributos a){
 		return "int";
 	}
 	if(a.tipo == "string"){
-		if(a.tamanhoDaString == 0){
-			return "char*";
-		}
-		else{
-			return "char[" + to_string(a.tamanhoDaString) + "]";
-		}
+		return "char*";
 	}
 	else{
 		return a.tipo;
 	}
+}
+
+void flagError(string msg){
+	errorFlag = 1;
+	errorString += msg;
+	errorCounter++;
+}
+
+void alterarTamanhoDaString(string id, int tamanho){
+	vector<int> aux = getIdIndex(id);
+	pilhaDeTabelaDeSimbolos.at(aux.at(1)).at(aux.at(0)).tamanhoDaString = tamanho;
 }
