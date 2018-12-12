@@ -425,22 +425,24 @@ E 			: E TK_SOMA E
 			{
 				string preTraducao = $3.traducao;
 				string atribuicao = "";
-				string realTipo3 = $3.tipo;
 				if (isIdDeclared($1.label, 1)){
 					$1.tipo = getType($1.label);
-					if ($1.tipo != $3.tipo && $1.tipo != "var"){
-						if($3.tipo == "var"){
-							realTipo3 = getVarType($3.label);
-						}
-						if (ehConversivel($1.tipo, realTipo3)){
-							string novoTemp = nameGen();
-							preTraducao = preTraducao + "\t" + $3.tipo + " " + novoTemp + ";\n";
-							changeTempName($1.label, novoTemp);
+					if ($1.tipo != $3.tipo && $1.tipo != "var"){ //corrigir o caso de $3.tipo ser 'var'
+						if($1.tipo == getRealTipo($3)){
+
 						}
 						else{
-							flagError("id of type " + $1.tipo + " can not be of type " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
-							//yyerror("id of type " + $1.tipo + " can not be of type " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+							if (ehConversivel($1.tipo, $3.tipo)){
+								string novoTemp = nameGen();
+								preTraducao = preTraducao + "\t" + $3.tipo + " " + novoTemp + ";\n";
+								changeTempName($1.label, novoTemp);
+							}
+							else{
+								flagError("id of type " + $1.tipo + " can not be of type " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+								//yyerror("id of type " + $1.tipo + " can not be of type " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+							}
 						}
+						
 					}
 					if($1.tipo == "var"){
 						string tipoDaVariavel = getRealTipo($1);
