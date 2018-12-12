@@ -33,6 +33,8 @@ STRING \"({LETRA}|{NUM}|{ESPACO})+\"
 
 "string"	{ yylval.label = "string"; return TK_TIPO; }
 
+"var"		{ yylval.label = "var";	return TK_TIPO; }
+
 "if"		{ return TK_IF; }
 
 "while"		{ return TK_WHILE; }
@@ -46,6 +48,8 @@ STRING \"({LETRA}|{NUM}|{ESPACO})+\"
 "continue" 	{ return TK_CONTINUE; }
 
 "powerContinue" { return TK_POWERCONTINUE; }
+
+"strict" 	{ return TK_STRICT; }
 
 
 [(){}[\];,]	{ return *yytext; }

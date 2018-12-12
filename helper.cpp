@@ -22,6 +22,7 @@ struct atributos
 	string traducao;
 	string tipo;
 	int tamanhoDaString;
+	string varType;
 };
 
 typedef struct ops
@@ -53,6 +54,10 @@ static int errorCounter = 0;
 static int errorFlag = 0;
 static string errorString = "";
 
+//se for 1 - sem variáveis dinâmicas
+//se for 0 - com variáveis dinâmicas
+static int strict_mode = 0;
+
 string nameGen();
 string labelNameGen();
 int searchMatrix(string id);
@@ -63,7 +68,9 @@ bool precisaDeConversao(string opA, string opB);
 vector<int> getIdIndex(string id);
 string getType(string s);
 string getTempName(string s);
-void changeTempName(string tipo);
+string getVarType(string s);
+void changeTempName(string id, string novoTemp);
+void changeVarType(string id, string novoTipo);
 void inserirVetorOp(string op, string a, string b, string r);
 void criarVetorOp();
 void printVetorOp();
@@ -122,7 +129,15 @@ void addMatrix(atributos n){
 }
 
 int ajeitarExpressao(atributos &resultado, atributos op1, string operador, atributos op2){
-	resultado.tipo = checarOp(operador, op1.tipo, op2.tipo);
+	string realTipo1 = op1.tipo;
+	string realTipo2 = op2.tipo;
+	if(realTipo1 == "var"){
+		realTipo1 = getVarType(op1.label);
+	}
+	if(realTipo2 == "var"){
+		realTipo2 = getVarType(op2.label);
+	}
+	resultado.tipo = checarOp(operador, realTipo1, realTipo2);
 	if (resultado.tipo == ""){
 		return -1;
 	}
@@ -134,37 +149,37 @@ int ajeitarExpressao(atributos &resultado, atributos op1, string operador, atrib
 	declaracoes += "\t" + resultado.tipo + " " + resultado.label + ";\n";
 
 	//operação propriamente dita
-	string operacao = "\t" + resultado.label + " = " + op1.label + " " + operador + " " + op2.label + ";\n";
+	string operacao = "\t" + resultado.label + " = " + op1.tempLabel + " " + operador + " " + op2.tempLabel + ";\n";
 
 	string conversao = "";
 
 	string aux;
 
 	//se for necessaria a conversao de um dos operandos
-	if (precisaDeConversao(op1.tipo, op2.tipo)){
-		switch(decidirConversao(op1.tipo, op2.tipo)){
+	if (precisaDeConversao(realTipo1, realTipo2)){
+		switch(decidirConversao(realTipo1, realTipo2)){
 			case 1:
 				aux = nameGen();
-				conversao = "\t" + resultado.tipo + " " + aux + " = (" + resultado.tipo + ") " + op1.label + ";\n";
-				operacao = "\t" + resultado.label + " = " + aux + " " + operador + " " + op2.label + ";\n";
+				conversao = "\t" + resultado.tipo + " " + aux + " = (" + resultado.tipo + ") " + op1.tempLabel + ";\n";
+				operacao = "\t" + resultado.label + " = " + aux + " " + operador + " " + op2.tempLabel + ";\n";
 				break;
 			case 2:
 				aux = nameGen();
-				conversao = "\t" + resultado.tipo + " " + aux + " = (" + resultado.tipo + ") " + op2.label + ";\n";
-				operacao = "\t" + resultado.label + " = " + op1.label + " " + operador + " " + aux + ";\n";
+				conversao = "\t" + resultado.tipo + " " + aux + " = (" + resultado.tipo + ") " + op2.tempLabel + ";\n";
+				operacao = "\t" + resultado.label + " = " + op1.tempLabel + " " + operador + " " + aux + ";\n";
 				break;
 			case 0:
 				return -2;
 		}
 		if (op1.tipo != resultado.tipo){
 			string aux = nameGen();
-			conversao = "\t" + resultado.tipo + " " + aux + " = (" + resultado.tipo + ") " + op1.label + ";\n";
-			operacao = "\t" + resultado.label + " = " + aux + " " + operador + " " + op2.label + ";\n";
+			conversao = "\t" + resultado.tipo + " " + aux + " = (" + resultado.tipo + ") " + op1.tempLabel + ";\n";
+			operacao = "\t" + resultado.label + " = " + aux + " " + operador + " " + op2.tempLabel + ";\n";
 		}
 		else{
 			string aux = nameGen();
-			conversao = "\t" + resultado.tipo + " " + aux + " = (" + resultado.tipo + ") " + op2.label + ";\n";
-			operacao = "\t" + resultado.label + " = " + op1.label + " " + operador + " " + aux + ";\n";
+			conversao = "\t" + resultado.tipo + " " + aux + " = (" + resultado.tipo + ") " + op2.tempLabel + ";\n";
+			operacao = "\t" + resultado.label + " = " + op1.tempLabel + " " + operador + " " + aux + ";\n";
 		}
 	}
 	resultado.traducao = resultado.traducao + conversao + operacao;
@@ -363,6 +378,9 @@ string getRealTipo(atributos a){
 	if(a.tipo == "string"){
 		return "char*";
 	}
+	if(a.tipo == "var"){
+		return getVarType(a.label);
+	}
 	else{
 		return a.tipo;
 	}
@@ -377,4 +395,14 @@ void flagError(string msg){
 void alterarTamanhoDaString(string id, int tamanho){
 	vector<int> aux = getIdIndex(id);
 	pilhaDeTabelaDeSimbolos.at(aux.at(1)).at(aux.at(0)).tamanhoDaString = tamanho;
+}
+
+void changeVarType(string id, string novoTipo){
+	vector<int> aux = getIdIndex(id);
+	pilhaDeTabelaDeSimbolos.at(aux.at(1)).at(aux.at(0)).varType = novoTipo;
+}
+
+string getVarType(string id){
+	atributos aux = procurarNoEscopo(id, 1);
+	return aux.varType;
 }

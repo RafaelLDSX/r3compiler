@@ -13,6 +13,7 @@ int yylex(void);
 void yyerror(string);
 %}
 
+%token TK_STRICT
 %token TK_IF TK_WHILE TK_FOR TK_BREAK TK_POWERBREAK TK_CONTINUE TK_POWERCONTINUE
 %token TK_SOMA TK_SUBTRACAO TK_DIVISAO TK_MULTIPLICACAO TK_MENOR TK_MAIOR TK_MENORIGUAL TK_MAIORIGUAL TK_ATRIBUICAO TK_IGUAL TK_DIFERENTE TK_COMENTARIO
 %token TK_NUM TK_REAL TK_BOOL TK_CHAR TK_STRING
@@ -28,7 +29,7 @@ void yyerror(string);
 
 
 %%
-
+//add regra vazia no strict que vai funfar!
 S 			: TK_TIPO TK_MAIN '(' ')' BLOCO
 			{
 				if(errorFlag != 1)
@@ -40,7 +41,15 @@ S 			: TK_TIPO TK_MAIN '(' ')' BLOCO
 			{
 				$$.traducao = $1.traducao + $2.traducao;
 			}
+			| EMPTYSTRICT TK_STRICT S
+			{
+				$$.traducao = "";
+			}
 			;
+EMPTYSTRICT	:
+			{
+				strict_mode = 1;
+			}
 EMPILHA		:
 			{
 				criarTabelaDeSimbolos();
@@ -132,7 +141,6 @@ CTRL 		: TK_IF E COMANDO
 							+ "\tgoto " + comeco + ";" 
 							+ "\n\t" + fim + ":\n";
 				desempilharLabelStruct();
-				cout << "DESEMPILHADO\n";
 
 			}
 			| TK_BREAK ';'
@@ -177,9 +185,14 @@ STMT		: TK_TIPO TK_ID
 				}
 				$2.tempLabel = nameGen();
 				$2.tipo = $1.label;
-				addMatrix($2);
 				$$.traducao = "";
 				string aux = getRealTipo($2);
+				//se a variável for do tipo 'var', declara inicialmente no código intermediário como 'int'
+				if($2.tipo == "var"){
+					aux = "int";
+					$2.varType = "int";
+				}
+				addMatrix($2);
 				declaracoes += "\t" + aux + " " + $2.tempLabel + ";\n";
 			}
 			| TK_ID TK_ATRIBUICAO E
@@ -188,33 +201,69 @@ STMT		: TK_TIPO TK_ID
 				string atribuicao = "";
 				if (isIdDeclared($1.label, 1)){
 					$1.tipo = getType($1.label);
-					if ($1.tipo != $3.tipo){
-						if (ehConversivel($1.tipo, $3.tipo)){
-							string novoTemp = nameGen();
-							preTraducao = preTraducao + "\t" + $3.tipo + " " + novoTemp + ";\n";
-							changeTempName($1.label, novoTemp);
+					if ($1.tipo != $3.tipo && $1.tipo != "var"){ //corrigir o caso de $3.tipo ser 'var'
+						if($1.tipo == getRealTipo($3)){
+
 						}
 						else{
-							flagError("id of type " + $1.tipo + " can not be of type " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
-							//yyerror("id of type " + $1.tipo + " can not be of type " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+							if (ehConversivel($1.tipo, $3.tipo)){
+								string novoTemp = nameGen();
+								preTraducao = preTraducao + "\t" + $3.tipo + " " + novoTemp + ";\n";
+								changeTempName($1.label, novoTemp);
+							}
+							else{
+								flagError("id of type " + $1.tipo + " can not be of type " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+								//yyerror("id of type " + $1.tipo + " can not be of type " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
+							}
+						}
+						
+					}
+					if($1.tipo == "var"){
+						string tipoDaVariavel = getRealTipo($1);
+						string tipoDaExpressao = getRealTipo($3);
+						//se os tipos não forem iguais, converter o var
+						if(tipoDaVariavel != tipoDaExpressao){
+							string newName = nameGen();
+							preTraducao = preTraducao + "\t" + tipoDaExpressao + " " + newName + ";\n";
+							changeTempName($1.label, newName);
+							changeVarType($1.label, tipoDaExpressao);
 						}
 					}
 					$1.traducao = getTempName($1.label);
-					if($1.tipo == "string"){
+					if($1.tipo == "string" || $3.tipo == "string"){
 						$1.tamanhoDaString = $3.tamanhoDaString;
 						alterarTamanhoDaString($1.label, $1.tamanhoDaString);
 						$$.traducao = preTraducao + "\t" + $1.traducao + " = (" + getRealTipo($1) + ") malloc(" 
 							+ to_string($1.tamanhoDaString) + ");\n" 
-							+ "\tstrcpy(" + $1.traducao + ", " + $3.label + ");\n"
-							+ "\tfree(" + $3.label + ");\n"; 
+							+ "\tstrcpy(" + $1.traducao + ", " + $3.tempLabel + ");\n"
+							+ "\tfree(" + $3.tempLabel + ");\n"; 
 					}
 					else{
-						$$.traducao = preTraducao + "\t" + $1.traducao + " = " + $3.label + ";\n";
+						$$.traducao = preTraducao + "\t" + $1.traducao + " = " + $3.tempLabel + ";\n";
 					}
 				}
 				else{
-					flagError("id not declared\nLine: " + to_string(lineNumber) + "\n");
-					//yyerror("id not declared\nLine: " + to_string(lineNumber) + "\n");
+					if(strict_mode == 1){
+						flagError("id not declared\nLine: " + to_string(lineNumber) + "\n");	
+					}
+					//inferindo o tipo
+					$1.tipo = $3.tipo;
+					$1.tempLabel = nameGen();
+					addMatrix($1);
+					if($1.tipo == "string"){
+						$1.tamanhoDaString = $3.tamanhoDaString;
+						alterarTamanhoDaString($1.label, $1.tamanhoDaString);
+						$$.traducao = preTraducao + "\t" + $1.tempLabel + " = (" + getRealTipo($1) + ") malloc(" 
+							+ to_string($1.tamanhoDaString) + ");\n" 
+							+ "\tstrcpy(" + $1.tempLabel + ", " + $3.tempLabel + ");\n"
+							+ "\tfree(" + $3.tempLabel + ");\n";
+					}
+					else{
+						$$.traducao = preTraducao + "\t" + $1.tempLabel + " = " + $3.tempLabel + ";\n";
+					}
+					string aux = getRealTipo($1);
+					declaracoes += "\t" + aux + " " + $1.tempLabel + ";\n";
+					// yyerror("id not declared\nLine: " + to_string(lineNumber) + "\n");
 				}
 			}
 
@@ -359,7 +408,7 @@ E 			: E TK_SOMA E
 			}
 			| '(' TK_TIPO ')' TK_ID
 			{
-				if(!(ehConversivel($4.tipo, $2.label))){
+				if(!(ehConversivel(getType($4.label), $2.label))){
 					flagError("cannot convert " + $4.tipo + " into " + $2.label);
 				}
 				else{
@@ -376,10 +425,14 @@ E 			: E TK_SOMA E
 			{
 				string preTraducao = $3.traducao;
 				string atribuicao = "";
+				string realTipo3 = $3.tipo;
 				if (isIdDeclared($1.label, 1)){
 					$1.tipo = getType($1.label);
-					if ($1.tipo != $3.tipo){
-						if (ehConversivel($1.tipo, $3.tipo)){
+					if ($1.tipo != $3.tipo && $1.tipo != "var"){
+						if($3.tipo == "var"){
+							realTipo3 = getVarType($3.label);
+						}
+						if (ehConversivel($1.tipo, realTipo3)){
 							string novoTemp = nameGen();
 							preTraducao = preTraducao + "\t" + $3.tipo + " " + novoTemp + ";\n";
 							changeTempName($1.label, novoTemp);
@@ -389,21 +442,51 @@ E 			: E TK_SOMA E
 							//yyerror("id of type " + $1.tipo + " can not be of type " + $3.tipo + "\nLine: " + to_string(lineNumber) + "\n");
 						}
 					}
+					if($1.tipo == "var"){
+						string tipoDaVariavel = getRealTipo($1);
+						string tipoDaExpressao = getRealTipo($3);
+						//se os tipos não forem iguais, converter o var
+						if(tipoDaVariavel != tipoDaExpressao){
+							string newName = nameGen();
+							preTraducao = preTraducao + "\t" + tipoDaExpressao + " " + newName + ";\n";
+							changeTempName($1.label, newName);
+							changeVarType($1.label, tipoDaExpressao);
+						}
+					}
 					$1.traducao = getTempName($1.label);
-					if($1.tipo == "string"){
+					if($1.tipo == "string" || $3.tipo == "string"){
 						$1.tamanhoDaString = $3.tamanhoDaString;
 						alterarTamanhoDaString($1.label, $1.tamanhoDaString);
 						$$.traducao = preTraducao + "\t" + $1.traducao + " = (" + getRealTipo($1) + ") malloc(" 
 							+ to_string($1.tamanhoDaString) + ");\n" 
-							+ "\tstrcpy(" + $1.traducao + ", " + $3.label + ");\n"
-							+ "\tfree(" + $3.label + ");\n";
+							+ "\tstrcpy(" + $1.traducao + ", " + $3.tempLabel + ");\n"
+							+ "\tfree(" + $3.tempLabel + ");\n"; 
 					}
 					else{
-						$$.traducao = preTraducao + "\t" + $1.traducao + " = " + $3.label + ";\n";
+						$$.traducao = preTraducao + "\t" + $1.traducao + " = " + $3.tempLabel + ";\n";
 					}
 				}
 				else{
-					flagError("id not declared\nLine: " + to_string(lineNumber) + "\n");
+					if(strict_mode == 1){
+						flagError("id not declared\nLine: " + to_string(lineNumber) + "\n");	
+					}
+					//inferindo o tipo
+					$1.tipo = $3.tipo;
+					$1.tempLabel = nameGen();
+					addMatrix($1);
+					if($1.tipo == "string"){
+						$1.tamanhoDaString = $3.tamanhoDaString;
+						alterarTamanhoDaString($1.label, $1.tamanhoDaString);
+						$$.traducao = preTraducao + "\t" + $1.tempLabel + " = (" + getRealTipo($1) + ") malloc(" 
+							+ to_string($1.tamanhoDaString) + ");\n" 
+							+ "\tstrcpy(" + $1.tempLabel + ", " + $3.tempLabel + ");\n"
+							+ "\tfree(" + $3.tempLabel + ");\n";
+					}
+					else{
+						$$.traducao = preTraducao + "\t" + $1.tempLabel + " = " + $3.tempLabel + ";\n";
+					}
+					string aux = getRealTipo($1);
+					declaracoes += "\t" + aux + " " + $1.tempLabel + ";\n";
 					// yyerror("id not declared\nLine: " + to_string(lineNumber) + "\n");
 				}
 			}
@@ -415,7 +498,7 @@ E 			: E TK_SOMA E
 					// $$.tipo = matriz[2][aux];
 					$$ = aux;
 					$$.traducao = "";
-					$$.label = $$.tempLabel;							//gambiarra
+					//$$.label = $$.tempLabel;							//gambiarra
 				}
 				else{
 					flagError("id not declared\nLine: " + to_string(lineNumber) + "\n");
